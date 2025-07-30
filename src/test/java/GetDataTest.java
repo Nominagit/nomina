@@ -15,7 +15,7 @@ public class GetDataTest extends BaseTest {
 
     @Test
     @Disabled
-    public void getFieldNames(){
+    public void getFieldNames() {
         driver.get("https://www3.wipo.int/madrid/monitor/en/showData.jsp?ID=ROM.1864832&DES=1");
 
         // Находим все абзацы на странице
@@ -32,41 +32,50 @@ public class GetDataTest extends BaseTest {
     }
 
     @Test
-    public void getDataFromWipo () throws IOException {
+    public void getDataFromWipo() throws IOException, InterruptedException {
         String prefix = "18648";
-        for (int i = 10; i <= 20; i++) {
+        for (int i = 10; i <= 12; i++) {
             String suffix = String.format("%02d", i);
             String fullNumber = prefix + suffix;
 
-            try {
-                allData = companyCatalogPage.getCompanyData(fullNumber, "text", wipoLink);
-                List<WebElement> sliceAllData = allData.subList(7,17);
-                List<String> keys = companyCatalogPage.wipoKeys.subList(0, companyCatalogPage.wipoKeys.size() - 2);
-                Map<String, String> dataMap = companyCatalogPage.getDataMap(keys, sliceAllData);
+            companyCatalogPage = new CompanyCatalogPage(driver);
+            // метод getCompanyData получает список данных на странице по искомому значению
+            allData = companyCatalogPage.getCompanyData(fullNumber, "text", wipoLink);
 
+            Thread.sleep(2000);
+
+            // отбираем из имеющихся данных только нужные разделы
+            List<WebElement> sliceAllData = allData.subList(7, 17);
+
+            // wipoKeys - наименование переменных в будущем json файле (пока без полей  registrationDate и expirationDate)
+            List<String> keys = companyCatalogPage.wipoKeys.subList(0, companyCatalogPage.wipoKeys.size() - 2);
+            // сопоставляем наименование переменных с данными из страницы
+            Map<String, String> dataMap = companyCatalogPage.getDataMap(keys, sliceAllData);
+
+            try {
+                // получаем информацию о переменных registrationDate и expirationDate
                 List<WebElement> date = driver.findElements(By.className("date"));
 
                 String regDate = date.get(2).getText();   // registrationDate
                 String expDate = date.get(3).getText();   // expirationDate
+                // записываем отдельно в json данные по дате
                 dataMap.put("registrationDate", regDate);
                 dataMap.put("expirationDate", expDate);
 
+                // получаем номер компании
                 String appNum = companyCatalogPage.getApplicationNumber_(allData);
-                File outputFile = companyCatalogPage.generatePathToJson(appNum, "wipo");
+                // сохраняем полученные данные в json
+                companyCatalogPage.saveDataToJson(appNum, "wipo", dataMap);
 
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.enable(SerializationFeature.INDENT_OUTPUT);
-                mapper.writeValue(outputFile, dataMap);
-
-                System.out.println("JSON saved to: " + outputFile.getAbsolutePath());
-            } catch (NullPointerException nullPointerException){
-
+                // сохраняем из страницы изображение компании
+                // TODO - реализовать логику сохранения изображения для wipo
+            } catch (NoSuchElementException noSuchElementException) {
             }
         }
     }
 
     @Test
-    public void getDataFromAipa () throws IOException, InterruptedException {
+    public void getDataFromAipa() throws IOException, InterruptedException {
         String prefix = "2024";
         for (int i = 1; i <= 5; i++) {
             // TODO - продумай логику на изменение нумерации согласно требуемой логики
@@ -97,7 +106,8 @@ public class GetDataTest extends BaseTest {
                     companyCatalogPage.saveDataToJson(appNum, "aipa", dataMap);
                     // сохраняем из страницы изображение компании
                     companyCatalogPage.downloadImage(aipaLink, "aipa", fullNumber);
-                } catch (NoSuchElementException noSuchElementException) { // обработка ошибки на случай, когда картинка не успела загрузиться
+                } catch (
+                        NoSuchElementException noSuchElementException) { // обработка ошибки на случай, когда картинка не успела загрузиться
                     companyCatalogPage.downloadImageWithRetry(aipaLink, "aipa", fullNumber);
                 }
             } else if (allDataCount == 1) { // кейс, когда информация о компании не загружена на сайт
