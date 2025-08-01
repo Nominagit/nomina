@@ -65,8 +65,9 @@ public class GetDataTest extends BaseTest {
                 companyCatalogPage.saveDataToJson(appNum, "wipo", dataMap);
 
                 // сохраняем из страницы изображение компании
-                // TODO - реализовать логику сохранения изображения для wipo
+                companyCatalogPage.downloadImage(wipoLink, "wipo", fullNumber);
             } catch (NoSuchElementException noSuchElementException) {
+                companyCatalogPage.downloadImageWithRetry(wipoLink, "wipo", fullNumber);
             }
         }
     }
