@@ -1,15 +1,19 @@
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.*;
 
 public class CompanyCatalogPage {
@@ -49,8 +53,9 @@ public class CompanyCatalogPage {
             "expirationDate"
     );
 
-    public List<WebElement> getCompanyData(String linkId, String searchingData, String dataLink) {
+    public List<WebElement> getCompanyData(String linkId, String searchingData, String dataLink) throws InterruptedException {
         driver.get(dataLink + linkId);
+        Thread.sleep(2000);
         return driver.findElements(By.className(searchingData));
     }
     public Map<String, String> getDataMap(List<String> keys, List<WebElement> allData) {
@@ -96,15 +101,15 @@ public class CompanyCatalogPage {
         ).toFile();
         return outputFile;
     }
-    public File generatePathToImage(String linkName, String linkId){
-        String projectDir = System.getProperty("user.dir");
-        File outputFile = Paths.get(
-                projectDir,
-                "src", "test", "resources", "image", linkName,
-                linkId + ".jpg"
-        ).toFile();
-        return outputFile;
-    }
+        public File generatePathToImage(String linkName, String linkId){
+            String projectDir = System.getProperty("user.dir");
+            File outputFile = Paths.get(
+                    projectDir,
+                    "src", "test", "resources", "image", linkName,
+                    linkId + ".jpg"
+            ).toFile();
+            return outputFile;
+        }
     public void saveDataToJson(String appNum, String dataName, Map<String, String> dataMap) throws IOException {
         File outputFile = generatePathToJson(appNum, dataName);
 
@@ -123,32 +128,79 @@ public class CompanyCatalogPage {
 
         System.out.println("JSON saved to: " + outputFile.getAbsolutePath());
     }
+    // Возвращает null, если элемент не найден
     public String getCompanyImageSrc(String dataLink, String linkId) {
         driver.get(dataLink + linkId);
-        return driver.findElement(By.xpath("//img[contains(@src, '"+ linkId +"')]"))
-                .getAttribute("src");
+
+        // Явное ожидание небольшой паузы, если страница долго рендерится (необязательно)
+        new WebDriverWait(driver, Duration.ofSeconds(3))
+                .until(d -> ((JavascriptExecutor) d)
+                        .executeScript("return document.readyState")
+                        .equals("complete"));
+
+        // используем findElements, чтобы не получать исключение
+        List<WebElement> imgs = driver.findElements(
+                By.xpath("//img[contains(@src, '" + linkId + "')]")
+        );
+        if (imgs.isEmpty()) {
+            // картинка не найдена
+            return null;
+        }
+        return imgs.get(0).getAttribute("src");
     }
+
+    // Скачивает картинку или создаёт файл-заглушку со "*" при отсутствии
     public void downloadImage(String dataLink, String dataName, String linkId) throws IOException {
         String imageUrl = getCompanyImageSrc(dataLink, linkId);
-        File imagePath = generatePathToImage(dataName, linkId);
+        File realPath = generatePathToImage(dataName, linkId);
+        File parent = realPath.getParentFile();
+        if (!parent.exists()) {
+            parent.mkdirs();
+        }
 
+        if (imageUrl == null) {
+            // создаём файл-заглушку с * в имени
+            File placeholder = new File(parent, "*" + linkId + ".jpg");
+            if (!placeholder.exists()) {
+                placeholder.createNewFile();
+                System.out.println(">> Placeholder file created: " + placeholder.getAbsolutePath());
+            }
+            return;
+        }
+        // обычная загрузка картинки в realPath
         URL base = new URL(dataLink);
         URL imgUrl = new URL(base, imageUrl);
-
         BufferedImage img = ImageIO.read(imgUrl);
-        ImageIO.write(img, "jpg", imagePath);
+        if (img == null) {
+            throw new IOException("ImageIO.read вернул null для " + imgUrl);
+        }
+        ImageIO.write(img, "jpg", realPath);
     }
+
+    /**
+     * То же самое, но с тремя попытками. Если всё три раза упало —
+     * единоразово пишем '*'.
+     */
     public void downloadImageWithRetry(String dataLink, String dataName, String linkId) throws IOException {
         int attempts = 0;
         while (attempts < 3) {
             try {
                 downloadImage(dataLink, dataName, linkId);
-                return; // всё успешно
-            } catch (NoSuchElementException e) {
+                return;
+            } catch (IOException e) {
                 attempts++;
-                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                System.err.println("Попытка " + attempts + " неудачна: " + e.getMessage());
+                try { Thread.sleep(500); } catch (InterruptedException ignored) {}
             }
         }
-        throw new NoSuchElementException("Изображение не прогрузилось после 3 попыток: " + linkId);
+        // после трёх неудач — ставим тоже placeholder
+        File realPath = generatePathToImage(dataName, linkId);
+        File parent = realPath.getParentFile();
+        if (!parent.exists()) parent.mkdirs();
+        File placeholder = new File(parent, "*" + linkId + ".jpg");
+        if (!placeholder.exists()) {
+            placeholder.createNewFile();
+            System.out.println(">> After retries: placeholder created " + placeholder.getAbsolutePath());
+        }
     }
 }
