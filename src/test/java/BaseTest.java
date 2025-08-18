@@ -11,8 +11,8 @@ public class BaseTest {
     public WebDriver driver;
     CompanyCatalogPage companyCatalogPage;
     List<WebElement> allData;
-    String aipaLink = CompanyCatalogPage.aipaBaseLink;
-    String wipoLink = CompanyCatalogPage.wipoBaseLink;
+    String aipaLink = CompanyCatalogPage.AIPA_BASE;
+    String wipoLink = CompanyCatalogPage.WIPO_BASE;
 
     @BeforeEach
     public void setUp() {
