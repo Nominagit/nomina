@@ -127,7 +127,7 @@ public class CompanyCatalogPage {
 
     /**
      * WIPO: пробуем найти application/basic application в списке текстовых блоков,
-     * иначе берём fallback — сам id (надёжно).
+     * иначе берём fallback — сам id.
      */
     public String extractWipoApplicationNumber(List<WebElement> allTextBlocks, String fallbackId) {
         String candidate = null;

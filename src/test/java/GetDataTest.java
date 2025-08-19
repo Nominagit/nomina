@@ -39,19 +39,19 @@ public class GetDataTest extends BaseTest {
 
         for (long id = WIPO_START_ID; id <= WIPO_END_ID; id++) {
             String fullNumber = String.valueOf(id);
-            String bucket = page.wipoBucket(fullNumber);
+            String bucket = page.wipoBucket(fullNumber); // бакет = префикс
 
-            // Загружаем блоки и пытаемся собрать карту
+            // Загружаем блоки и пытаемся собрать данные
             List<WebElement> allData = page.getCompanyData(fullNumber, "text", CompanyCatalogPage.WIPO_BASE);
 
-            // Срез полей «по позициям» мы убираем. Вместо этого просто используем первые 9 текстовых блоков как «основные»
-            // (holder...madridDesignation), а даты читаем безопасно отдельно.
+            // Используем первые 9 текстовых блоков как «основные»
+            // (holder...madridDesignation), а даты читаем отдельно
             List<String> keys = page.wipoKeys.subList(0, page.wipoKeys.size() - 2);
             List<WebElement> mainBlocks = allData.size() >= keys.size() ? allData.subList(0, keys.size()) : allData;
 
             Map<String, String> dataMap = page.zipToMap(keys, mainBlocks);
 
-            // Даты (registration/expiration) — безопасное чтение
+            // Даты (registration/expiration) — чтение
             page.tryReadWipoDates().ifPresent(dates -> {
                 dataMap.put("registrationDate", dates[0]);
                 dataMap.put("expirationDate", dates[1]);
@@ -88,8 +88,9 @@ public class GetDataTest extends BaseTest {
             for (int i = AIPA_SUFFIX_START; i <= AIPA_SUFFIX_END; i++) {
                 String suffix = String.format("%04d", i);
                 String fullId = prefix + suffix;
-                String bucket = page.aipaBucket(prefix);
+                String bucket = page.aipaBucket(prefix); // бакет = префикс
 
+                // Загружаем блоки и пытаемся собрать карту
                 List<WebElement> allData = page.getCompanyData(fullId, "data", CompanyCatalogPage.AIPA_BASE);
 
                 // Прямой маппинг по ключам AIPA
