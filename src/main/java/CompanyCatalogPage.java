@@ -3,6 +3,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import util.HashUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -269,6 +270,10 @@ public class CompanyCatalogPage {
 
         String ext = guessExtFromUrl(imageUrl);
         File real = imagePath(sourceName, bucket, id, ext);
+        real.getAbsolutePath();
+        real.getPath();
+        HashUtil.pHash64(img);
+        HashUtil.dHash64(img);
         ensureParent(real);
         ImageIO.write(img, ext.equals("jpeg") ? "jpg" : ext, real);
         System.out.println("Image saved: " + real.getAbsolutePath() + "\n");

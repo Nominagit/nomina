@@ -1,9 +1,12 @@
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
+import repository.TrademarkRepository;
 
 import java.io.IOException;
-import java.util.*;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Базовая идея:
@@ -15,6 +18,7 @@ import java.util.*;
 public class GetDataTest extends BaseTest {
 
     private CompanyCatalogPage page;
+    private final TrademarkRepository repository = new TrademarkRepository();
 
     // --- AIPA ---
     private static final String[] AIPA_PREFIXES = {
@@ -89,6 +93,9 @@ public class GetDataTest extends BaseTest {
                 String suffix = String.format("%04d", i);
                 String fullId = prefix + suffix;
                 String bucket = page.aipaBucket(prefix); // бакет = префикс
+                String imagePath = "";
+                BigInteger perceptiveHash = BigInteger.ZERO;
+                BigInteger differenceHash = BigInteger.ZERO;
 
                 // Загружаем блоки и пытаемся собрать карту
                 List<WebElement> allData = page.getCompanyData(fullId, "data", CompanyCatalogPage.AIPA_BASE);
@@ -99,6 +106,8 @@ public class GetDataTest extends BaseTest {
 
                 if (hasData) {
                     String appNum = page.extractAipaApplicationNumber(dataMap);
+                    String markName = dataMap.getOrDefault("markName", "UNKNOWN");
+
                     page.saveJson("aipa", "success", bucket, appNum, dataMap);
                     consecutiveMisses = 0;
 
@@ -107,6 +116,7 @@ public class GetDataTest extends BaseTest {
                     } catch (IOException | NoSuchElementException e) {
                         page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId);
                     }
+                    repository.addToDatabase(fullId, markName, dataMap, imagePath, perceptiveHash, differenceHash);
                 } else {
                     // «Нет данных» — пишем в error с именем по самому id (чтобы отличать)
                     page.saveJson("aipa", "error", bucket, fullId, dataMap);
@@ -121,5 +131,8 @@ public class GetDataTest extends BaseTest {
                 }
             }
         }
+
+        System.out.println("=== All saved records in mock DB ===");
+        repository.getAll().forEach(System.out::println);
     }
 }
