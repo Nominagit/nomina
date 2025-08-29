@@ -9,8 +9,8 @@ import java.math.BigInteger;
 
 public final class HashUtil {
 
-    private static final PerceptiveHash P_HASH = new PerceptiveHash(64);
-    private static final DifferenceHash D_HASH = new DifferenceHash(64, DifferenceHash.Precision.Double);
+    private static final PerceptiveHash P_HASH = new PerceptiveHash(128);
+    private static final DifferenceHash D_HASH = new DifferenceHash(128, DifferenceHash.Precision.Triple);
 
     private HashUtil() {}
 

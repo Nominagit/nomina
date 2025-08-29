@@ -3,20 +3,18 @@ package model;
 import java.math.BigInteger;
 import java.util.Map;
 
-public class TrademarkRecord {
+public class AipaRecord {
     private int id;                     // Auto-increment ID
     private String fullId;              // prefix + suffix
     private String markName;            // extracted from JSON
     private Map<String, String> data;   // Full scraped data
     private String imagePath;           // Local file path to logo
-
-    // ✅ Store multiple hashes
     private BigInteger perceptiveHash;  // From pHash (robust)
     private BigInteger differenceHash;  // From dHash (resizing robustness)
 
-    public TrademarkRecord(int id, String fullId, String markName,
-                           Map<String, String> data, String imagePath,
-                           BigInteger perceptiveHash, BigInteger differenceHash) {
+    public AipaRecord(int id, String fullId, String markName,
+                      Map<String, String> data, String imagePath,
+                      BigInteger perceptiveHash, BigInteger differenceHash) {
         this.id = id;
         this.fullId = fullId;
         this.markName = markName;
@@ -24,6 +22,9 @@ public class TrademarkRecord {
         this.imagePath = imagePath;
         this.perceptiveHash = perceptiveHash;
         this.differenceHash = differenceHash;
+    }
+
+    public AipaRecord() {
     }
 
     public int getId() {
@@ -64,6 +65,18 @@ public class TrademarkRecord {
 
     public void setDifferenceHash(BigInteger differenceHash) {
         this.differenceHash = differenceHash;
+    }
+
+    public void setFullId(String fullId) {
+        this.fullId = fullId;
+    }
+
+    public void setMarkName(String markName) {
+        this.markName = markName;
+    }
+
+    public void setData(Map<String, String> data) {
+        this.data = data;
     }
 
     @Override

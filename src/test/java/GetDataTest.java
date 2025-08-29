@@ -1,10 +1,11 @@
+import model.AipaRecord;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
-import repository.TrademarkRepository;
+import repository.AipaRepository;
 
 import java.io.IOException;
-import java.math.BigInteger;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ import java.util.Map;
 public class GetDataTest extends BaseTest {
 
     private CompanyCatalogPage page;
-    private final TrademarkRepository repository = new TrademarkRepository();
+    private final AipaRepository repository = new AipaRepository("jdbc:postgresql://localhost:5432/postgres", "postgres", "nominapass");
 
     // --- AIPA ---
     private static final String[] AIPA_PREFIXES = {
@@ -36,6 +37,9 @@ public class GetDataTest extends BaseTest {
     // Формируем полное число и идём по диапазону.
     private static final long WIPO_START_ID = 1_000_000L;   // 1000000
     private static final long WIPO_END_ID   = 1_000_020L;   // подставь нужный верхний диапазон
+
+    public GetDataTest() throws SQLException {
+    }
 
     @Test
     public void scrapeWipo() throws IOException, InterruptedException {
@@ -83,7 +87,7 @@ public class GetDataTest extends BaseTest {
     }
 
     @Test
-    public void scrapeAipa() throws IOException, InterruptedException {
+    public void scrapeAipa() throws Exception {
         page = new CompanyCatalogPage(driver);
 
         for (String prefix : AIPA_PREFIXES) {
@@ -93,9 +97,7 @@ public class GetDataTest extends BaseTest {
                 String suffix = String.format("%04d", i);
                 String fullId = prefix + suffix;
                 String bucket = page.aipaBucket(prefix); // бакет = префикс
-                String imagePath = "";
-                BigInteger perceptiveHash = BigInteger.ZERO;
-                BigInteger differenceHash = BigInteger.ZERO;
+                var aipa = new AipaRecord();
 
                 // Загружаем блоки и пытаемся собрать карту
                 List<WebElement> allData = page.getCompanyData(fullId, "data", CompanyCatalogPage.AIPA_BASE);
@@ -107,20 +109,23 @@ public class GetDataTest extends BaseTest {
                 if (hasData) {
                     String appNum = page.extractAipaApplicationNumber(dataMap);
                     String markName = dataMap.getOrDefault("markName", "UNKNOWN");
+                    aipa.setFullId(fullId);
+                    aipa.setMarkName(markName);
+                    aipa.setData(dataMap);
 
                     page.saveJson("aipa", "success", bucket, appNum, dataMap);
                     consecutiveMisses = 0;
 
                     try {
-                        page.downloadImage(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId);
+                        page.downloadImage(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, aipa);
                     } catch (IOException | NoSuchElementException e) {
-                        page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId);
+                        page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, aipa);
                     }
-                    repository.addToDatabase(fullId, markName, dataMap, imagePath, perceptiveHash, differenceHash);
+                    repository.addToDatabase(aipa);
                 } else {
                     // «Нет данных» — пишем в error с именем по самому id (чтобы отличать)
                     page.saveJson("aipa", "error", bucket, fullId, dataMap);
-                    page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId);
+                    page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, aipa);
 
                     consecutiveMisses++;
                     // Если в начале префикса или в целом подряд слишком много пустых — переключаемся на следующий префикс
@@ -131,8 +136,5 @@ public class GetDataTest extends BaseTest {
                 }
             }
         }
-
-        System.out.println("=== All saved records in mock DB ===");
-        repository.getAll().forEach(System.out::println);
     }
 }

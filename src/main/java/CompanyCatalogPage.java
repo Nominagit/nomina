@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import model.AipaRecord;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -9,6 +10,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -246,7 +248,7 @@ public class CompanyCatalogPage {
     /**
      * Скачивает картинку; если не удалось — создаёт плейсхолдер `<id>.missing`
      */
-    public void downloadImage(String dataLinkBase, String sourceName, String bucket, String id) throws IOException {
+    public void downloadImage(String dataLinkBase, String sourceName, String bucket, String id, AipaRecord record) throws IOException {
         open(dataLinkBase, id); // гарантируем, что мы на нужной странице
         String imageUrl = findImageSrcById(id);
 
@@ -270,20 +272,24 @@ public class CompanyCatalogPage {
 
         String ext = guessExtFromUrl(imageUrl);
         File real = imagePath(sourceName, bucket, id, ext);
-        real.getAbsolutePath();
-        real.getPath();
-        HashUtil.pHash64(img);
-        HashUtil.dHash64(img);
+        String imagePath = real.getAbsolutePath();
+        int indexOfImage = imagePath.indexOf("image");
+        imagePath = imagePath.substring(indexOfImage);
+        BigInteger perceptiveHash = HashUtil.pHash64(img);
+        BigInteger differenceHash = HashUtil.dHash64(img);
+        record.setImagePath(imagePath);
+        record.setPerceptiveHash(perceptiveHash);
+        record.setDifferenceHash(differenceHash);
         ensureParent(real);
         ImageIO.write(img, ext.equals("jpeg") ? "jpg" : ext, real);
         System.out.println("Image saved: " + real.getAbsolutePath() + "\n");
     }
 
-    public void downloadImageWithRetry(String dataLinkBase, String sourceName, String bucket, String id) throws IOException {
+    public void downloadImageWithRetry(String dataLinkBase, String sourceName, String bucket, String id, AipaRecord record) throws IOException {
         int attempts = 0;
         while (attempts < 3) {
             try {
-                downloadImage(dataLinkBase, sourceName, bucket, id);
+                downloadImage(dataLinkBase, sourceName, bucket, id, record);
                 return;
             } catch (IOException e) {
                 attempts++;
