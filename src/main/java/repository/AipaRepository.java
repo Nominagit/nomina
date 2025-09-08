@@ -1,7 +1,7 @@
 package repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import model.AipaRecord;
+import model.DataModel;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -14,7 +14,7 @@ public class AipaRepository {
         this.connection = DriverManager.getConnection(url, user, password);
     }
 
-    public void addToDatabase(AipaRecord record) {
+    public void addToDatabase(DataModel record) {
         String jsonData;
         try {
             jsonData = objectMapper.writeValueAsString(record.getData());

@@ -1,6 +1,6 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import model.AipaRecord;
+import model.DataModel;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -248,7 +248,7 @@ public class CompanyCatalogPage {
     /**
      * Скачивает картинку; если не удалось — создаёт плейсхолдер `<id>.missing`
      */
-    public void downloadImage(String dataLinkBase, String sourceName, String bucket, String id, AipaRecord record) throws IOException {
+    public void downloadImage(String dataLinkBase, String sourceName, String bucket, String id, DataModel record) throws IOException {
         open(dataLinkBase, id); // гарантируем, что мы на нужной странице
         String imageUrl = findImageSrcById(id);
 
@@ -285,7 +285,7 @@ public class CompanyCatalogPage {
         System.out.println("Image saved: " + real.getAbsolutePath() + "\n");
     }
 
-    public void downloadImageWithRetry(String dataLinkBase, String sourceName, String bucket, String id, AipaRecord record) throws IOException {
+    public void downloadImageWithRetry(String dataLinkBase, String sourceName, String bucket, String id, DataModel record) throws IOException {
         int attempts = 0;
         while (attempts < 3) {
             try {

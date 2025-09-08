@@ -1,13 +1,16 @@
-import model.AipaRecord;
+import model.DataModel;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import repository.AipaRepository;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Базовая идея:
@@ -19,7 +22,7 @@ import java.util.Map;
 public class GetDataTest extends BaseTest {
 
     private CompanyCatalogPage page;
-    private final AipaRepository repository = new AipaRepository("jdbc:postgresql://localhost:5432/postgres", "postgres", "nominapass");
+    //private final AipaRepository repository = new AipaRepository("jdbc:postgresql://localhost:5432/postgres", "postgres", "nominapass");
 
     // --- AIPA ---
     private static final String[] AIPA_PREFIXES = {
@@ -47,41 +50,78 @@ public class GetDataTest extends BaseTest {
 
         for (long id = WIPO_START_ID; id <= WIPO_END_ID; id++) {
             String fullNumber = String.valueOf(id);
-            String bucket = page.wipoBucket(fullNumber); // бакет = префикс
+            String bucket = page.wipoBucket(fullNumber);
+            var dataModel = new DataModel();
 
             // Загружаем блоки и пытаемся собрать данные
             List<WebElement> allData = page.getCompanyData(fullNumber, "text", CompanyCatalogPage.WIPO_BASE);
 
-            // Используем первые 9 текстовых блоков как «основные»
-            // (holder...madridDesignation), а даты читаем отдельно
-            List<String> keys = page.wipoKeys.subList(0, page.wipoKeys.size() - 2);
-            List<WebElement> mainBlocks = allData.size() >= keys.size() ? allData.subList(0, keys.size()) : allData;
+            // 1) Заголовок
+            String markName = "";
+            try {
+                WebElement h = driver.findElement(By.className("markname"));
+                String header = (h.getText() == null) ? "" : h.getText().trim();
+                int dash = header.indexOf('-');
+                markName = (dash > 0) ? header.substring(dash + 1).split("\\R", 2)[0].trim() : header;
+            } catch (Exception ignored) {
+            }
 
-            Map<String, String> dataMap = page.zipToMap(keys, mainBlocks);
+            // 2) Определяем holder и niceClasses
+            String holder = driver.findElement(By.xpath("//div[@class='lapin client holType']")).getText();
+            String niceClasses = driver.findElement(By.xpath("//td[@class='nice']//div")).getText();
 
-            // Даты (registration/expiration) — чтение
-            page.tryReadWipoDates().ifPresent(dates -> {
-                dataMap.put("registrationDate", dates[0]);
-                dataMap.put("expirationDate", dates[1]);
-            });
+            // 3) Даты
+            String regDate = "", expDate = "";
+            page.tryReadWipoDates().ifPresent(ds -> {  эфф. финал  });
+            Optional<String[]> datesOpt = page.tryReadWipoDates();
+            if (datesOpt.isPresent()) {
+                regDate = datesOpt.get()[0];
+                expDate = datesOpt.get()[1];
+            }
+
+            // 4) 732 и 511
+            String holder732 = "";
+            String goods511 = "";
+            try {
+                WebElement n732 = driver.findElement(By.xpath(
+                        "//div[@class='inidCode' and contains(text(),'732')]/following::div[contains(@class,'text')][1]"
+                ));
+                holder732 = Optional.ofNullable(n732.getText()).orElse("").trim();
+            } catch (NoSuchElementException ignored) {
+            }
+
+            try {
+                WebElement n511 = driver.findElement(By.xpath(
+                        "//div[@class='inidCode' and contains(text(),'511')]/following::div[contains(@class,'text')][1]"
+                ));
+                goods511 = Optional.ofNullable(n511.getText()).orElse("").trim();
+            } catch (NoSuchElementException ignored) {
+            }
+
+            // 5) Собираем JSON
+            Map<String, String> dataMap = new LinkedHashMap<>();
+            dataMap.put("markName", markName);
+            dataMap.put("applicationNumber", fullNumber);
+            dataMap.put("holder", holder);
+            dataMap.put("niceClasses", niceClasses);
+            dataMap.put("holder732", holder732);
+            dataMap.put("goodsAndServices511", goods511);
+            dataMap.put("registrationDate", regDate);
+            dataMap.put("expirationDate", expDate);
 
             boolean hasData = page.hasLikelyValidData(allData);
-
-            // Имя файла: корректный application number, иначе id
-            String appNum = page.extractWipoApplicationNumber(allData, fullNumber);
+            String appNum = fullNumber;
 
             if (hasData) {
                 page.saveJson("wipo", "success", bucket, appNum, dataMap);
                 try {
-                    page.downloadImage(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber);
+                    page.downloadImage(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
                 } catch (IOException | NoSuchElementException e) {
-                    // ретраи и плейсхолдер
-                    page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber);
+                    page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
                 }
             } else {
-                // «Нет данных» или разметка не та
                 page.saveJson("wipo", "error", bucket, appNum, dataMap);
-                page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber);
+                page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
             }
         }
     }
@@ -97,7 +137,7 @@ public class GetDataTest extends BaseTest {
                 String suffix = String.format("%04d", i);
                 String fullId = prefix + suffix;
                 String bucket = page.aipaBucket(prefix); // бакет = префикс
-                var aipa = new AipaRecord();
+                var dataModel = new DataModel();
 
                 // Загружаем блоки и пытаемся собрать карту
                 List<WebElement> allData = page.getCompanyData(fullId, "data", CompanyCatalogPage.AIPA_BASE);
@@ -109,23 +149,24 @@ public class GetDataTest extends BaseTest {
                 if (hasData) {
                     String appNum = page.extractAipaApplicationNumber(dataMap);
                     String markName = dataMap.getOrDefault("markName", "UNKNOWN");
-                    aipa.setFullId(fullId);
-                    aipa.setMarkName(markName);
-                    aipa.setData(dataMap);
+                    dataModel.setFullId(fullId);
+                    dataModel.setMarkName(markName);
+                    dataModel.setData(dataMap);
+                    dataModel.setLink(CompanyCatalogPage.AIPA_BASE + fullId);
 
-                    page.saveJson("aipa", "success", bucket, appNum, dataMap);
+                    page.saveJson("dataModel", "success", bucket, appNum, dataMap);
                     consecutiveMisses = 0;
 
                     try {
-                        page.downloadImage(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, aipa);
+                        page.downloadImage(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, dataModel);
                     } catch (IOException | NoSuchElementException e) {
-                        page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, aipa);
+                        page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, dataModel);
                     }
-                    repository.addToDatabase(aipa);
+                    repository.addToDatabase(dataModel);
                 } else {
                     // «Нет данных» — пишем в error с именем по самому id (чтобы отличать)
                     page.saveJson("aipa", "error", bucket, fullId, dataMap);
-                    page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, aipa);
+                    page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, dataModel);
 
                     consecutiveMisses++;
                     // Если в начале префикса или в целом подряд слишком много пустых — переключаемся на следующий префикс

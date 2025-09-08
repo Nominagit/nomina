@@ -3,28 +3,31 @@ package model;
 import java.math.BigInteger;
 import java.util.Map;
 
-public class AipaRecord {
+public class DataModel {
     private int id;                     // Auto-increment ID
     private String fullId;              // prefix + suffix
     private String markName;            // extracted from JSON
+
+    private String link;
     private Map<String, String> data;   // Full scraped data
     private String imagePath;           // Local file path to logo
     private BigInteger perceptiveHash;  // From pHash (robust)
     private BigInteger differenceHash;  // From dHash (resizing robustness)
 
-    public AipaRecord(int id, String fullId, String markName,
-                      Map<String, String> data, String imagePath,
-                      BigInteger perceptiveHash, BigInteger differenceHash) {
+    public DataModel(int id, String fullId, String markName,
+                     Map<String, String> data, String imagePath, String link,
+                     BigInteger perceptiveHash, BigInteger differenceHash) {
         this.id = id;
         this.fullId = fullId;
         this.markName = markName;
         this.data = data;
+        this.link = link;
         this.imagePath = imagePath;
         this.perceptiveHash = perceptiveHash;
         this.differenceHash = differenceHash;
     }
 
-    public AipaRecord() {
+    public DataModel() {
     }
 
     public int getId() {
@@ -79,12 +82,21 @@ public class AipaRecord {
         this.data = data;
     }
 
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
     @Override
     public String toString() {
-        return "TrademarkRecord{" +
+        return "DataModel{" +
                 "id=" + id +
                 ", fullId='" + fullId + '\'' +
                 ", markName='" + markName + '\'' +
+                ", link='" + link + '\'' +
                 ", data=" + data +
                 ", imagePath='" + imagePath + '\'' +
                 ", perceptiveHash=" + perceptiveHash +
