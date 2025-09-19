@@ -1,14 +1,10 @@
 {
-  "holderInfo" : "1000010- MÁDARA\nActive",
-  "establishmentJurisdiction" : "Active",
-  "legalInfo" : "Active",
-  "representativeInfo" : "Trademark Holder Registration Date Expiration Date Nice classes\nMÁDARA\nMadara Cosmetics AS\n19.09.2008\n19.09.2028\n03, 21, 35, 44",
-  "markType" : "",
-  "viennaClass" : "",
-  "niceClass" : "",
-  "basicApplication" : "Madara Cosmetics AS\nZeltiņu iela 131,\nLV-2167 Mārupe, Mārupes nov. (LV)",
-  "basicRegistration" : "LV",
-  "madridDesignation" : "Joint stock company, Latvia",
+  "markName" : "MÁDARA",
+  "applicationNumber" : "1000010",
+  "holder" : "Madara Cosmetics AS",
+  "niceClasses" : "03, 21, 35, 44",
+  "holder732" : "Madara Cosmetics AS\nZeltiņu iela 131,\nLV-2167 Mārupe, Mārupes nov. (LV)",
+  "goodsAndServices511" : "03\nCosmetic preparations including creams, lotions, tonics, balsams, ointments, beauty masks, oils for cosmetic purposes, bath salts; sunscreen preparations; tissues impregnated with cosmetic lotions; depilatory preparations; nail varnish; hair waving preparations; make-up preparations; massage preparations; deodorants for personal use; substances for nice smell included in this class; laundry fresheners; incense; soaps; perfumery; essential oils, cosmetic and hair preparations; tooth powders and pastes.\n21\nCombs and sponges.\n35\nSales (retail and wholesale) services in respect of creams, lotions, tonics, balsams, ointments, beauty masks, oils for cosmetic purposes, bath salts, sunscreen preparations, tissues impregnated with cosmetic lotions, depilatory preparations, nail varnish, hair waving preparations, make-up preparations, massage preparations, combs and sponges, deodorants for personal use, substances for nice smell included in this class, laundry fresheners, incense, soap, perfumery, essential oils, cosmetic and hair preparations, tooth powders and pastes.\n44\nHealth and beauty care services for human beings or animals (pets).",
   "registrationDate" : "19.09.2008",
   "expirationDate" : "19.09.2028"
 }

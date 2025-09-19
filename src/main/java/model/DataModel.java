@@ -8,6 +8,7 @@ public class DataModel {
     private String fullId;              // prefix + suffix
     private String markName;            // extracted from JSON
 
+    private String type;
     private String link;
     private Map<String, String> data;   // Full scraped data
     private String imagePath;           // Local file path to logo
@@ -88,6 +89,14 @@ public class DataModel {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override

@@ -22,7 +22,7 @@ import java.util.Optional;
 public class GetDataTest extends BaseTest {
 
     private CompanyCatalogPage page;
-    //private final AipaRepository repository = new AipaRepository("jdbc:postgresql://localhost:5432/postgres", "postgres", "nominapass");
+    private final AipaRepository repository = new AipaRepository("jdbc:postgresql://localhost:5432/postgres", "postgres", "nominapass");
 
     // --- AIPA ---
     private static final String[] AIPA_PREFIXES = {
@@ -72,7 +72,6 @@ public class GetDataTest extends BaseTest {
 
             // 3) Даты
             String regDate = "", expDate = "";
-            page.tryReadWipoDates().ifPresent(ds -> {  эфф. финал  });
             Optional<String[]> datesOpt = page.tryReadWipoDates();
             if (datesOpt.isPresent()) {
                 regDate = datesOpt.get()[0];
@@ -114,11 +113,18 @@ public class GetDataTest extends BaseTest {
 
             if (hasData) {
                 page.saveJson("wipo", "success", bucket, appNum, dataMap);
+                dataModel.setType("wipo");
+                dataModel.setData(dataMap);
+                dataModel.setMarkName(markName);
+                dataModel.setFullId(fullNumber);
+                dataModel.setLink(CompanyCatalogPage.WIPO_BASE + fullNumber);
+
                 try {
                     page.downloadImage(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
                 } catch (IOException | NoSuchElementException e) {
                     page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
                 }
+                this.repository.addToDatabase(dataModel);
             } else {
                 page.saveJson("wipo", "error", bucket, appNum, dataMap);
                 page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
@@ -153,6 +159,7 @@ public class GetDataTest extends BaseTest {
                     dataModel.setMarkName(markName);
                     dataModel.setData(dataMap);
                     dataModel.setLink(CompanyCatalogPage.AIPA_BASE + fullId);
+                    dataModel.setType("aipa");
 
                     page.saveJson("dataModel", "success", bucket, appNum, dataMap);
                     consecutiveMisses = 0;
@@ -162,7 +169,7 @@ public class GetDataTest extends BaseTest {
                     } catch (IOException | NoSuchElementException e) {
                         page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, dataModel);
                     }
-                    repository.addToDatabase(dataModel);
+                    this.repository.addToDatabase(dataModel);
                 } else {
                     // «Нет данных» — пишем в error с именем по самому id (чтобы отличать)
                     page.saveJson("aipa", "error", bucket, fullId, dataMap);

@@ -1,14 +1,10 @@
 {
-  "holderInfo" : "1000017- ABLESTIK\nActive",
-  "establishmentJurisdiction" : "Active",
-  "legalInfo" : "Active",
-  "representativeInfo" : "Trademark Holder Registration Date Expiration Date Nice classes\nABLESTIK\nHenkel AG & Co. KGaA\n18.11.2008\n18.11.2028\n01, 17",
-  "markType" : "",
-  "viennaClass" : "",
-  "niceClass" : "",
-  "basicApplication" : "Henkel AG & Co. KGaA\nHenkelstrasse 67\n40589 Düsseldorf (DE)",
-  "basicRegistration" : "DE",
-  "madridDesignation" : "a partnership limited by shares, Federal Republic of Germany",
+  "markName" : "ABLESTIK",
+  "applicationNumber" : "1000017",
+  "holder" : "Henkel AG & Co. KGaA",
+  "niceClasses" : "01, 17",
+  "holder732" : "Henkel AG & Co. KGaA\nHenkelstrasse 67\n40589 Düsseldorf (DE)",
+  "goodsAndServices511" : "01\nChemicals for industrial purposes; unprocessed plastics; plastics in liquid and powder form particularly for potting, casting, injection moulding; adhesives for industrial purposes; chemicals for printing inks.\n17\nInsulating materials, particularly thermo hardened plastic materials in form of film, bars and pipes, epoxy compositions use in electrical components, thermo hardened resins, synthetic materials; close lining preparations in form of film and bands; resin containing consolidation materials; electrical insulating materials, sealants.",
   "registrationDate" : "18.11.2008",
   "expirationDate" : "18.11.2028"
 }

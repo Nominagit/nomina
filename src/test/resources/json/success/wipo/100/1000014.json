@@ -1,14 +1,10 @@
 {
-  "holderInfo" : "1000014- DECOLO\nInactive:\nexpired",
-  "establishmentJurisdiction" : "Inactive:\nexpired",
-  "legalInfo" : "Inactive:\nexpired",
-  "representativeInfo" : "Trademark Holder Registration Date Expiration Date Nice classes\nDECOLO\nB&C International B.V.\n10.10.2008\n10.10.2018\n16, 20, 24",
-  "markType" : "",
-  "viennaClass" : "",
-  "niceClass" : "",
-  "basicApplication" : "B&C International B.V.\nAmpèrestraat 11\nNL-8071 PH Nunspeet (NL)",
-  "basicRegistration" : "BX",
-  "madridDesignation" : "Novagraaf Nederland BV\nHoogoorddreef 5\nNL-1101 BA Amsterdam (NL)",
+  "markName" : "DECOLO",
+  "applicationNumber" : "1000014",
+  "holder" : "B&C International B.V.",
+  "niceClasses" : "16, 20, 24",
+  "holder732" : "B&C International B.V.\nAmpèrestraat 11\nNL-8071 PH Nunspeet (NL)",
+  "goodsAndServices511" : "16\nPaper, cardboard and goods made from these materials, not included in other classes; printed matter; bookbinding material; photographs; stationery; adhesives for stationery or household purposes; artists' materials; paint brushes; typewriters and office requisites (except furniture); instructional and teaching material (except apparatus); plastic materials for packaging (not included in other classes); printers' type; printing blocks; shaped paper or cardboard panels, also pleated and/or folded, for attaching to windows to shut out light; shaped paper or cardboard panels for attaching to windows to block out light.\n20\nFurniture, mirrors, picture frames; goods (not included in other classes) of wood, cork, reed, cane, wicker, horn, bone, ivory, whalebone, shell, amber, mother-of-pearl, meerschaum and substitutes for all these materials, or of plastics; slatted indoor blinds; non-metal fasteners, namely bolts, nails, rivets, screws; curtain hooks, curtain tie-backs, curtain rails, curtain rings, curtain rods and curtain rollers; indoor window blinds (shades) (furniture) and slatted blinds for indoor use, all made of textile or plastic materials; indoor roller blinds, indoor roller blinds that shut out light.\n24\nFabric and textile goods not included in other classes, such as curtains, blackout curtains, pleated curtains, panel curtains and folding curtains, all made of textile or plastic materials; curtain fabrics; bed and table covers.",
   "registrationDate" : "10.10.2008",
   "expirationDate" : "10.10.2018"
 }

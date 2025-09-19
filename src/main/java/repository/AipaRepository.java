@@ -16,15 +16,26 @@ public class AipaRepository {
 
     public void addToDatabase(DataModel record) {
         String jsonData;
+        String sql;
         try {
             jsonData = objectMapper.writeValueAsString(record.getData());
         } catch (Exception e) {
             throw new RuntimeException("Failed to serialize record data to JSON", e);
         }
 
-        String sql = "INSERT INTO aipa " +
-                "(full_id, mark_name, data, image_path, perceptive_hash, difference_hash) " +
-                "VALUES (?, ?, ?::jsonb, ?, ?, ?) RETURNING id";
+        String sqlAipa = "INSERT INTO aipa " +
+                "(full_id, mark_name, data, image_path, perceptive_hash, difference_hash, link) " +
+                "VALUES (?, ?, ?::jsonb, ?, ?, ?, ?) RETURNING id";
+
+        String sqlWipo = "INSERT INTO wipo " +
+                "(full_id, mark_name, data, image_path, perceptive_hash, difference_hash, link) " +
+                "VALUES (?, ?, ?::jsonb, ?, ?, ?, ?) RETURNING id";
+
+        if(record.getType().equals("aipa")) {
+            sql = sqlAipa;
+        } else {
+            sql = sqlWipo;
+        }
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, record.getFullId());
@@ -33,6 +44,7 @@ public class AipaRepository {
             stmt.setString(4, record.getImagePath() == null ? "" : record.getImagePath());
             stmt.setBigDecimal(5, record.getPerceptiveHash() == null ? null : new BigDecimal(record.getPerceptiveHash()));
             stmt.setBigDecimal(6, record.getDifferenceHash() == null ? null : new BigDecimal(record.getDifferenceHash()));
+            stmt.setString(7, record.getLink());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {

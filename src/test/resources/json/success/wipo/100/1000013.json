@@ -1,14 +1,10 @@
 {
-  "holderInfo" : "1000013- CNWWP\nInactive:\nexpired",
-  "establishmentJurisdiction" : "Inactive:\nexpired",
-  "legalInfo" : "Inactive:\nexpired",
-  "representativeInfo" : "Trademark Holder Registration Date Expiration Date Nice classes\nNingbo Liftstar Material Transport Equipment Factory\n28.08.2008\n28.08.2018\n12",
-  "markType" : "",
-  "viennaClass" : "",
-  "niceClass" : "",
-  "basicApplication" : "Ningbo Liftstar Material Transport Equipment Factory\nXicheng Village,\nZhanqi Town,\nYinzhou District\nNingbo City\n315144 Zhejiang Province (CN)",
-  "basicRegistration" : "CN",
-  "madridDesignation" : "FORIDOM IP LAW FIRM\n1st Floor, B Unit,\nNo. 410 Guiping Road,\nXuhui District\n200233 Shanghai (CN)",
+  "markName" : "CNWWP",
+  "applicationNumber" : "1000013",
+  "holder" : "Ningbo Liftstar Material Transport Equipment Factory",
+  "niceClasses" : "12",
+  "holder732" : "Ningbo Liftstar Material Transport Equipment Factory\nXicheng Village,\nZhanqi Town,\nYinzhou District\nNingbo City\n315144 Zhejiang Province (CN)",
+  "goodsAndServices511" : "12\nRemoval van for accumulator (term considered too vague by the International Bureau - Rule 13(2)(b) of the Common Regulations under the Madrid Agreement and Protocol); electric vehicles; fork lift trucks; goods handling carts; trolleys; casters for trolleys (vehicles); lifting cars; hydraulic circuits for vehicles; gear boxes for land vehicles; gearing for land vehicles.",
   "registrationDate" : "28.08.2008",
   "expirationDate" : "28.08.2018"
 }

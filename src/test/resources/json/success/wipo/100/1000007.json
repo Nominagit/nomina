@@ -1,14 +1,10 @@
 {
-  "holderInfo" : "1000007- BSI e-connect\nInactive:\nexpired",
-  "establishmentJurisdiction" : "Inactive:\nexpired",
-  "legalInfo" : "Inactive:\nexpired",
-  "representativeInfo" : "Trademark Holder Registration Date Expiration Date Nice classes\nBSI e-connect\nBSI SA\n30.07.2008\n30.07.2018\n35, 36, 38",
-  "markType" : "",
-  "viennaClass" : "",
-  "niceClass" : "",
-  "basicApplication" : "BSI SA\nVia Magatti 2\nCH-6900 Lugano (CH)",
-  "basicRegistration" : "CH",
-  "madridDesignation" : "BOVARD LTD, Patent and Trademark Attorneys\nOptingenstrasse 16\nCH-3000 Bern 25 (CH)",
+  "markName" : "BSI e-connect",
+  "applicationNumber" : "1000007",
+  "holder" : "BSI SA",
+  "niceClasses" : "35, 36, 38",
+  "holder732" : "BSI SA\nVia Magatti 2\nCH-6900 Lugano (CH)",
+  "goodsAndServices511" : "35\nBusiness inquiries; business organization and management consultancy; drawing-up of statistics; electronic commerce services, namely advertising in the form of data, texts, images, sound, alone or in combinations, by means of computer networks, for the sale of goods and services of all types; running the aforesaid services chiefly by means of a interactive access from remote locations, in particular by means of mobile devices and computer networks (home banking and online banking services accessed by telephone).\n36\nFinancial affairs; financial consulting; financial analysis; financial services; monetary services; banking; stock exchange quotations; financial clearing houses; stock exchange brokerage; financial information; financing services; foreign exchange operations; debt recovery and collection agencies; fund investments; electronic funds transfer, in particular management of payments; credit agencies; financial management; insurance, financial activities, banking and real estate consulting; running the aforesaid services chiefly by means of a interactive access from remote locations, in particular by means of mobile devices and computer networks (home banking and online banking services accessed by telephone).\n38\nTelecommunications, including data transmissions (to a remote modem or connected to a remote server); interactive telecommunication services, in particular by means of mobile devices and computer networks (home banking and online banking services accessed by telephone); broadcasting and provision of data, information, images and sounds to mobile and interactive devices as well as by means of computer networks (the Internet); providing computer hardware and software for secure communications between banks and customers.",
   "registrationDate" : "30.07.2008",
   "expirationDate" : "30.07.2018"
 }

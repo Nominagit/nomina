@@ -1,14 +1,10 @@
 {
-  "holderInfo" : "1000001- THE BINDING SITE\nActive",
-  "establishmentJurisdiction" : "Active",
-  "legalInfo" : "Active",
-  "representativeInfo" : "Trademark Holder Registration Date Expiration Date Nice classes\nTHE BINDING SITE\nThe Binding Site Group Limited\n16.02.2009\n16.02.2029\n01, 05, 09",
-  "markType" : "",
-  "viennaClass" : "",
-  "niceClass" : "",
-  "basicApplication" : "The Binding Site Group Limited\n8 Calthorpe Road,\nEdgbaston\nBirmingham, West Midlands B15 1QT (GB)",
-  "basicRegistration" : "GB",
-  "madridDesignation" : "GB",
+  "markName" : "THE BINDING SITE",
+  "applicationNumber" : "1000001",
+  "holder" : "The Binding Site Group Limited",
+  "niceClasses" : "01, 05, 09",
+  "holder732" : "The Binding Site Group Limited\n8 Calthorpe Road,\nEdgbaston\nBirmingham, West Midlands B15 1QT (GB)",
+  "goodsAndServices511" : "01\nReagents for scientific, clinical or research use; diagnostic and biological reagents for scientific, clinical or research use; all included in Class 1.\n05\nDiagnostic kits; immunological test kits; test kits for electrophoresis tests; kits for laboratory, medical, scientific or research tests on blood or body fluids or extracts from blood or body fluids; calibrating solutions; dilutents; control samples; stopping reagents; diagnostic products, agents, preparations and substances; reagents; antibodies; antibodies on agarose gel coated onto plastic plates; masks for applying diagnostic agents; dipstick test kits; dipsticks; parts and fittings for all the aforesaid goods.\n09\nScientific and laboratory apparatus and instruments; apparatus and instruments for clinical, laboratory or resarch use; measuring apparatus; diagnostic apparatus; apparatus and instruments for electrophoresis; apparatus and instruments for radial immunodiffusion; apparatus for determining particle size and/or size distribution; apparatus for measuring the concentration of particles, or a substance, in a liquid; light-scattering apparatus and instruments; sample analysing apparatus and instruments; incubators; computer software; machine readable data carriers.",
   "registrationDate" : "16.02.2009",
   "expirationDate" : "16.02.2029"
 }

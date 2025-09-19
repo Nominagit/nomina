@@ -1,14 +1,10 @@
 {
-  "holderInfo" : "1000005- MPH\nActive",
-  "establishmentJurisdiction" : "Active",
-  "legalInfo" : "Active",
-  "representativeInfo" : "Trademark Holder Registration Date Expiration Date Nice classes\nMPH\nMPH INTERNATIONAL\n02.07.2008\n02.07.2028\n35, 37, 39, 42",
-  "markType" : "",
-  "viennaClass" : "",
-  "niceClass" : "",
-  "basicApplication" : "MPH INTERNATIONAL\nTour Egée\n9/11 Allée de l'Arche\nF-92400 COURBEVOIE (FR)",
-  "basicRegistration" : "FR",
-  "madridDesignation" : "Société par Actions Simplifiée, FRANCE",
+  "markName" : "MPH",
+  "applicationNumber" : "1000005",
+  "holder" : "MPH INTERNATIONAL",
+  "niceClasses" : "35, 37, 39, 42",
+  "holder732" : "MPH INTERNATIONAL\nTour Egée\n9/11 Allée de l'Arche\nF-92400 COURBEVOIE (FR)",
+  "goodsAndServices511" : "35\nAdvertising and business namely, assistance with business management, business organization and management consultancy, business management consultancy, professional business consulting, business evaluations, efficiency experts; business information; business inquiries; business management, business administration, office functions; distribution of brochures and samples, rental of advertising materials; newspaper subscription services for third parties; subscription to delivery and transport services for third parties; management assistance to industrial or commercial companies; consulting, business information or inquiries; firms engaged in statistics, mechanical data processing and stenography; bookkeeping, documents reproduction; employment agencies; computerized file management; typewriter and office equipment rental; business organization consultancy; import-export; commercial information agency; marketing studies, project studies (business management assistance); exhibition organizing for commercial or advertising purposes; rental of vending machines.\n37\nConstruction and repairs; construction of buildings; chimney building companies, painting, plastering; plumbing, roofing; civil engineering; rural works; rental of building tools and equipment, bulldozers, tree removers; upkeep or cleaning of buildings, premises, floors (façade cleaning and restoring, disinfection, rodent extermination; maintenance work or cleaning of various items (laundering); repair and modification of clothing; retreading of tyres; vulcanization, shoe repairs, repairs to furniture, instruments and tools.\n39\nTransport and warehousing; passenger or freight transport; water and electric power distribution; furniture removal; packaging and storage of goods; travel planning; newspaper distribution, ferry operation; maritime towing; discharge and refloating of ships; packaging of goods; warehousing, clothing storage care; hire of horses, transport vehicle rental, refrigerators, garages, automobiles, parking spaces; vehicle garages; transport information; travel planning; tourist offices and travel agencies, seat bookings for travel and shows; vehicle breakdown assistance (towing); storage; storage of merchandise in warehouses for protection or safekeeping purposes.\n42\nEngineers' services; professional consultancy and drawing up of plans unrelated to business dealings; engineering, prospecting, materials testing, work of laboratories, computer programming; technical project studies.",
   "registrationDate" : "02.07.2008",
   "expirationDate" : "02.07.2028"
 }

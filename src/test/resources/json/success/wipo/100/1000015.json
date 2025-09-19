@@ -1,14 +1,10 @@
 {
-  "holderInfo" : "1000015- for you\nInactive:\nexpired",
-  "establishmentJurisdiction" : "Inactive:\nexpired",
-  "legalInfo" : "Inactive:\nexpired",
-  "representativeInfo" : "Trademark Holder Registration Date Expiration Date Nice classes\nXIAMEN HUAYU HARDWARE CO., LTD\n09.12.2008\n09.12.2018\n06, 09",
-  "markType" : "",
-  "viennaClass" : "",
-  "niceClass" : "",
-  "basicApplication" : "XIAMEN HUAYU HARDWARE CO., LTD\nB501, 506 Xinhong Building,\nxinglong Road\nHuli District Xiamen (CN)",
-  "basicRegistration" : "CN",
-  "madridDesignation" : "Corporation, China",
+  "markName" : "for you",
+  "applicationNumber" : "1000015",
+  "holder" : "XIAMEN HUAYU HARDWARE CO., LTD",
+  "niceClasses" : "06, 09",
+  "holder732" : "XIAMEN HUAYU HARDWARE CO., LTD\nB501, 506 Xinhong Building,\nxinglong Road\nHuli District Xiamen (CN)",
+  "goodsAndServices511" : "06\nChains of metal; fittings of metal for windows; door handles of metal; door bolts; hinges of metal; hooks of metal for clothes rails; fixed metal towel dispenser; fittings of metal for furniture; locks of metal, other than electric; ironmongery.\n09\nLocks, electric; locks, fingerprint; alarms; theft prevention installation, electric; electric door bells; anti-theft warning apparatus; lock, magnetic card; push buttons for bells; fire alarms.",
   "registrationDate" : "09.12.2008",
   "expirationDate" : "09.12.2018"
 }
