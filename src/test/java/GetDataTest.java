@@ -3,10 +3,13 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import repository.AipaRepository;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +17,10 @@ import java.util.Optional;
 
 /**
  * Базовая идея:
- *  - AIPA: перебор по префиксам; суффикс 0001..9999; бакет = префикс.
- *  - WIPO: перебор по числовому диапазону; бакет = id/10000 (100, 101, ...).
- *  - «Нет данных» → сохраняем в error, изображение → плейсхолдер .missing, продолжаем.
- *  - Много подряд пропусков для AIPA → переключаем префикс.
+ * - AIPA: перебор по префиксам; суффикс 0001..9999; бакет = префикс.
+ * - WIPO: перебор по числовому диапазону; бакет = id/10000 (100, 101, ...).
+ * - «Нет данных» → сохраняем в error, изображение → плейсхолдер .missing, продолжаем.
+ * - Много подряд пропусков для AIPA → переключаем префикс.
  */
 public class GetDataTest extends BaseTest {
 
@@ -26,20 +29,20 @@ public class GetDataTest extends BaseTest {
 
     // --- AIPA ---
     private static final String[] AIPA_PREFIXES = {
-            "", "2000"
-          /* , "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010",
+
+            "", "2019", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010",
             "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020",
-            "2021", "2022", "2023", "2024", "2025" */
-            };
+            "2021", "2022", "2023", "2024", "2025"
+    };
 
     private static final int AIPA_SUFFIX_START = 1;      // 0001
-    private static final int AIPA_SUFFIX_END   = 10;    // пример диапазона; можно 9999
+    private static final int AIPA_SUFFIX_END = 9999;    // пример диапазона; можно 9999
     private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 5; // если подряд столько «пустых» — префикс считаем исчерпанным
 
     // --- WIPO ---
     // Формируем полное число и идём по диапазону.
-    private static final long WIPO_START_ID = 1_000_000L;   // 1000000
-    private static final long WIPO_END_ID   = 1_000_020L;   // подставь нужный верхний диапазон
+    private static final long WIPO_START_ID = 1_170_001L;   // 1000000
+    private static final long WIPO_END_ID = 1_170_500L;   // подставь нужный верхний диапазон
 
     public GetDataTest() throws SQLException {
     }
@@ -67,8 +70,10 @@ public class GetDataTest extends BaseTest {
             }
 
             // 2) Определяем holder и niceClasses
-            String holder = driver.findElement(By.xpath("//div[@class='lapin client holType']")).getText();
-            String niceClasses = driver.findElement(By.xpath("//td[@class='nice']//div")).getText();
+            String holder = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@class='lapin client holType']"))).getText();
+            String niceClasses = new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//td[@class='nice']//div"))).getText();
 
             // 3) Даты
             String regDate = "", expDate = "";
