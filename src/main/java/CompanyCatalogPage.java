@@ -60,7 +60,7 @@ public class CompanyCatalogPage {
 
     public CompanyCatalogPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(6));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(60));
     }
 
     /* ========== Навигация и получение блоков данных ========== */
