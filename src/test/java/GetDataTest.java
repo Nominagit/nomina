@@ -2,6 +2,7 @@ import model.DataModel;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -37,12 +38,12 @@ public class GetDataTest extends BaseTest {
 
     private static final int AIPA_SUFFIX_START = 1;      // 0001
     private static final int AIPA_SUFFIX_END = 9999;    // пример диапазона; можно 9999
-    private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 5; // если подряд столько «пустых» — префикс считаем исчерпанным
+    private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 130; // если подряд столько «пустых» — префикс считаем исчерпанным
 
     // --- WIPO ---
     // Формируем полное число и идём по диапазону.
-    private static final long WIPO_START_ID = 1_170_001L;   // 1000000
-    private static final long WIPO_END_ID = 1_170_500L;   // подставь нужный верхний диапазон
+    private static final long WIPO_START_ID = 1_000_000L;   // 1000000
+    private static final long WIPO_END_ID = 1_000_000L;   // подставь нужный верхний диапазон - 1882100
 
     public GetDataTest() throws SQLException {
     }
@@ -70,10 +71,22 @@ public class GetDataTest extends BaseTest {
             }
 
             // 2) Определяем holder и niceClasses
-            String holder = new WebDriverWait(driver, Duration.ofSeconds(10))
-                    .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@class='lapin client holType']"))).getText();
-            String niceClasses = new WebDriverWait(driver, Duration.ofSeconds(10))
-                    .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//td[@class='nice']//div"))).getText();
+            String holder, niceClasses;
+            try {
+                holder = new WebDriverWait(driver, Duration.ofSeconds(60))
+                        .until(ExpectedConditions.presenceOfElementLocated(By.xpath("(//div[@class='lapin client holType'])[1]"))).getText();
+            } catch (TimeoutException e) {
+                page.saveJson("wipo", "error", bucket, fullNumber, Map.of("applicationNumber", fullNumber, "reason", "holder-missing"));
+                continue; // следующий id
+            }
+
+            try {
+                niceClasses = new WebDriverWait(driver, Duration.ofSeconds(60))
+                        .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//td[@class='nice']//div"))).getText();
+            } catch (TimeoutException e) {
+                page.saveJson("wipo", "error", bucket, fullNumber, Map.of("applicationNumber", fullNumber, "reason", "niceClasses-missing"));
+                continue; // следующий id
+            }
 
             // 3) Даты
             String regDate = "", expDate = "";
