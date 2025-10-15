@@ -1,4 +1,5 @@
 import model.DataModel;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -15,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Базовая идея:
@@ -42,13 +45,16 @@ public class GetDataTest extends BaseTest {
 
     // --- WIPO ---
     // Формируем полное число и идём по диапазону.
-    private static final long WIPO_START_ID = 1_000_000L;   // 1000000
-    private static final long WIPO_END_ID = 1_000_000L;   // подставь нужный верхний диапазон - 1882100
+//    private static final long WIPO_START_ID = 1_000_000L;   // 1000000
+//    private static final long WIPO_END_ID = 1_000_000L;   // подставь нужный верхний диапазон - 1882100
+    private static final int WIPO_START_ID = 1;   // 1000000
+    private static final int WIPO_END_ID = 51818;   // подставь нужный верхний диапазон - 1882100
 
     public GetDataTest() throws SQLException {
     }
 
     @Test
+    @Disabled
     public void scrapeWipo() throws IOException, InterruptedException {
         page = new CompanyCatalogPage(driver);
 
@@ -146,6 +152,145 @@ public class GetDataTest extends BaseTest {
             } else {
                 page.saveJson("wipo", "error", bucket, appNum, dataMap);
                 page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
+            }
+        }
+    }
+
+    @Test
+    public void scrapeWipoARM() throws IOException, InterruptedException {
+        page = new CompanyCatalogPage(driver);
+        driver.get("https://www3.wipo.int/madrid/monitor/en/?q=%7B%22searches%22:[%7B%22te%22:%22AM%22,%22fi%22:%22DS%22,%22co%22:%22AND%22%7D],%22filters%22:[%7B%22fi%22:%22STATUS%22,%22te%22:%22ACT%22,%22co%22:%22OR%22%7D],%22mode%22:%22advanced%22%7D");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+        WebElement tableEl = wait.until(ExpectedConditions.elementToBeClickable(By.id("0")));
+        tableEl.click();
+
+        By nextBtnLoc  = By.xpath("//div[contains(@class,'next_document')]");
+        By markNameLoc = By.cssSelector(".markname"); // используем в хелпере
+
+        for (int id = WIPO_START_ID; id <= WIPO_END_ID; id++) {
+            var dataModel = new DataModel();
+
+            // Загружаем блоки и пытаемся собрать данные
+            List<WebElement> allData = page.getCompanyData("text");
+
+            // Номер обращения
+            String fullNumber = "";
+            WebElement h = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20)); // <<< замена
+            String t = (h.getText() == null ? "" : h.getText().trim())
+                    .replace('\u2013','-')  // – en dash
+                    .replace('\u2014','-'); // — em dash
+
+            Matcher m = Pattern.compile("^\\s*(\\d+)\\s*[-—–]?").matcher(t);
+            fullNumber = m.find() ? m.group(1) : "";
+
+            // Определяем корзину - bucket
+            String bucket = page.wipoBucket(fullNumber);
+
+            // 1) Заголовок
+            String markName = "";
+            try {
+                WebElement h2 = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20)); // <<< замена
+                String header = (h2.getText() == null) ? "" : h2.getText().trim();
+                int dash = header.indexOf('-');
+                markName = (dash > 0) ? header.substring(dash + 1).split("\\R", 2)[0].trim() : header;
+            } catch (Exception ignored) {
+            }
+
+            // 2) Определяем holder и niceClasses
+            String holder = "";
+            String niceClasses = "";
+            try {
+                holder = new WebDriverWait(driver, Duration.ofSeconds(60))
+                        .until(ExpectedConditions.presenceOfElementLocated(By.xpath("(//div[@class='lapin client holType'])[1]"))).getText();
+            } catch (TimeoutException e) {
+                page.saveJson("wipo", "error", bucket, fullNumber, Map.of("applicationNumber", fullNumber, "reason", "holder-missing"));
+
+                wait.until(ExpectedConditions.refreshed(
+                        ExpectedConditions.elementToBeClickable(nextBtnLoc)
+                )).click(); // переход на следующую страницу
+                driver.switchTo().defaultContent(); // <<< сброс как предлагалось
+            }
+
+            try {
+                niceClasses = new WebDriverWait(driver, Duration.ofSeconds(60))
+                        .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//td[@class='nice']//div"))).getText();
+            } catch (TimeoutException e) {
+                page.saveJson("wipo", "error", bucket, fullNumber, Map.of("applicationNumber", fullNumber, "reason", "niceClasses-missing"));
+                wait.until(ExpectedConditions.refreshed(
+                        ExpectedConditions.elementToBeClickable(nextBtnLoc)
+                )).click(); // переход на следующую страницу
+                driver.switchTo().defaultContent(); // <<< сброс как предлагалось
+            }
+
+            // 3) Даты
+            String regDate = "", expDate = "";
+            Optional<String[]> datesOpt = page.tryReadWipoDates();
+            if (datesOpt.isPresent()) {
+                regDate = datesOpt.get()[0];
+                expDate = datesOpt.get()[1];
+            }
+
+            // 4) 732 и 511
+            String holder732 = "";
+            String goods511 = "";
+            try {
+                WebElement n732 = driver.findElement(By.xpath(
+                        "//div[@class='inidCode' and contains(text(),'732')]/following::div[contains(@class,'text')][1]"
+                ));
+                holder732 = Optional.ofNullable(n732.getText()).orElse("").trim();
+            } catch (NoSuchElementException ignored) {
+            }
+
+            try {
+                WebElement n511 = driver.findElement(By.xpath(
+                        "//div[@class='inidCode' and contains(text(),'511')]/following::div[contains(@class,'text')][1]"
+                ));
+                goods511 = Optional.ofNullable(n511.getText()).orElse("").trim();
+            } catch (NoSuchElementException ignored) {
+            }
+
+            // 5) Собираем JSON
+            Map<String, String> dataMap = new LinkedHashMap<>();
+            dataMap.put("markName", markName);
+            dataMap.put("applicationNumber", fullNumber);
+            dataMap.put("holder", holder);
+            dataMap.put("niceClasses", niceClasses);
+            dataMap.put("holder732", holder732);
+            dataMap.put("goodsAndServices511", goods511);
+            dataMap.put("registrationDate", regDate);
+            dataMap.put("expirationDate", expDate);
+
+            boolean hasData = page.hasLikelyValidData(allData);
+            String appNum = fullNumber;
+
+            if (hasData) {
+                page.saveJson("wipo", "success", bucket, appNum, dataMap);
+                dataModel.setType("wipo");
+                dataModel.setData(dataMap);
+                dataModel.setMarkName(markName);
+                dataModel.setFullId(fullNumber);
+                dataModel.setLink(CompanyCatalogPage.WIPO_BASE + fullNumber);
+
+                try {
+                    page.downloadImage("wipo", "success".equals("success") ? bucket : bucket, fullNumber, dataModel);
+                } catch (IOException | NoSuchElementException e) {
+                    page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
+                }
+                this.repository.addToDatabase(dataModel);
+
+                wait.until(ExpectedConditions.refreshed(
+                        ExpectedConditions.elementToBeClickable(nextBtnLoc)
+                )).click(); // переход на следующую страницу
+                driver.switchTo().defaultContent(); // <<< сброс как предлагалось
+            } else {
+                page.saveJson("wipo", "error", bucket, appNum, dataMap);
+                page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
+
+                wait.until(ExpectedConditions.refreshed(
+                        ExpectedConditions.elementToBeClickable(nextBtnLoc)
+                )).click(); // переход на следующую страницу
+                driver.switchTo().defaultContent(); // <<< сброс как предлагалось
             }
         }
     }

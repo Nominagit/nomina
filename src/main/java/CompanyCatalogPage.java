@@ -2,7 +2,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import model.DataModel;
 import org.openqa.selenium.*;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import util.HashUtil;
 
@@ -102,7 +104,30 @@ public class CompanyCatalogPage {
             }
             Thread.sleep(pauseMs);
         }
+        return result;
+    }
 
+    public List<WebElement> getCompanyData(String searchingData) throws InterruptedException {
+        // стартовая пауза — дайте странице дорендериться
+        Thread.sleep(1200);
+
+        List<WebElement> result = new ArrayList<>();
+        int attempts = 6;          // сколько раз перепробовать
+        int pauseMs = 600;        // пауза между попытками
+        int minNonEmpty = 4;       // считаем, что страница «загрузилась», если непустых блоков >= 4
+
+        for (int i = 0; i < attempts; i++) {
+            result = driver.findElements(By.className(searchingData));
+            long nonEmpty = result.stream()
+                    .map(WebElement::getText)
+                    .filter(t -> t != null && !t.trim().isEmpty())
+                    .count();
+
+            if (nonEmpty >= minNonEmpty) {
+                break; // достаточно данных — выходим
+            }
+            Thread.sleep(pauseMs);
+        }
         return result;
     }
 
@@ -285,6 +310,42 @@ public class CompanyCatalogPage {
         System.out.println("Image saved: " + real.getAbsolutePath() + "\n");
     }
 
+    public void downloadImage(String sourceName, String bucket, String id, DataModel record) throws IOException {
+        String imageUrl = findImageSrcById(id);
+
+        if (imageUrl == null) {
+            // плейсхолдер без опасных символов
+            File placeholder = imagePath(sourceName, bucket, id, "missing");
+            ensureParent(placeholder);
+            if (!placeholder.exists()) {
+                Files.createFile(placeholder.toPath());
+            }
+            System.out.println(">> Placeholder created: " + placeholder.getAbsolutePath());
+            return;
+        }
+
+        URL base = new URL(CompanyCatalogPage.WIPO_BASE);
+        URL imgUrl = new URL(base, imageUrl);
+        BufferedImage img = ImageIO.read(imgUrl);
+        if (img == null) {
+            throw new IOException("ImageIO.read returned null for " + imgUrl);
+        }
+
+        String ext = guessExtFromUrl(imageUrl);
+        File real = imagePath(sourceName, bucket, id, ext);
+        String imagePath = real.getAbsolutePath();
+        int indexOfImage = imagePath.indexOf("image");
+        imagePath = imagePath.substring(indexOfImage);
+        BigInteger perceptiveHash = HashUtil.pHash64(img);
+        BigInteger differenceHash = HashUtil.dHash64(img);
+        record.setImagePath(imagePath);
+        record.setPerceptiveHash(perceptiveHash);
+        record.setDifferenceHash(differenceHash);
+        ensureParent(real);
+        ImageIO.write(img, ext.equals("jpeg") ? "jpg" : ext, real);
+        System.out.println("Image saved: " + real.getAbsolutePath() + "\n");
+    }
+
     public void downloadImageWithRetry(String dataLinkBase, String sourceName, String bucket, String id, DataModel record) throws IOException {
         int attempts = 0;
         while (attempts < 3) {
@@ -347,10 +408,36 @@ public class CompanyCatalogPage {
      */
     public String wipoBucket(String fullNumber) {
         try {
-            long n = Long.parseLong(fullNumber);
-            return String.valueOf(n / 10000L);
+            int n = Integer.parseInt(fullNumber);
+            return String.valueOf(n / 10000);
         } catch (NumberFormatException e) {
             return "unknown";
         }
+    }
+
+    /** хелпер, который ищет локатор в корне и по всем iframe */
+    public WebElement findInAllFrames(WebDriver driver, By locator, Duration timeout) {
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        driver.switchTo().defaultContent();
+
+        // 1) Пробуем в корне
+        try {
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        } catch (TimeoutException ignore) {}
+
+        // 2) Перебор iframe
+        List<WebElement> iframes = driver.findElements(By.tagName("iframe"));
+        for (WebElement frame : iframes) {
+            try {
+                driver.switchTo().defaultContent();
+                driver.switchTo().frame(frame);
+                return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+            } catch (TimeoutException | NoSuchFrameException ignore) {
+                // пробуем следующий
+            }
+        }
+
+        driver.switchTo().defaultContent();
+        throw new NoSuchElementException("Element not found in any frame: " + locator);
     }
 }
