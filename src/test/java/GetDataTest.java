@@ -165,7 +165,7 @@ public class GetDataTest extends BaseTest {
         WebElement tableEl = wait.until(ExpectedConditions.elementToBeClickable(By.id("0")));
         tableEl.click();
 
-        By nextBtnLoc  = By.xpath("//div[contains(@class,'next_document')]");
+        By nextBtnLoc  = By.id("topDocNext");
         By markNameLoc = By.cssSelector(".markname"); // используем в хелпере
 
         for (int id = WIPO_START_ID; id <= WIPO_END_ID; id++) {
@@ -188,14 +188,14 @@ public class GetDataTest extends BaseTest {
             String bucket = page.wipoBucket(fullNumber);
 
             // 1) Заголовок
-            String markName = "";
-            try {
-                WebElement h2 = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20)); // <<< замена
-                String header = (h2.getText() == null) ? "" : h2.getText().trim();
-                int dash = header.indexOf('-');
-                markName = (dash > 0) ? header.substring(dash + 1).split("\\R", 2)[0].trim() : header;
-            } catch (Exception ignored) {
-            }
+//            String markName = "";
+//            try {
+//                WebElement h2 = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20)); // <<< замена
+//                String header = (h2.getText() == null) ? "" : h2.getText().trim();
+//                int dash = header.indexOf('-');
+//                markName = (dash > 0) ? header.substring(dash + 1).split("\\R", 2)[0].trim() : header;
+//            } catch (Exception ignored) {
+//            }
 
             // 2) Определяем holder и niceClasses
             String holder = "";
@@ -209,7 +209,6 @@ public class GetDataTest extends BaseTest {
                 wait.until(ExpectedConditions.refreshed(
                         ExpectedConditions.elementToBeClickable(nextBtnLoc)
                 )).click(); // переход на следующую страницу
-                driver.switchTo().defaultContent(); // <<< сброс как предлагалось
             }
 
             try {
@@ -220,7 +219,6 @@ public class GetDataTest extends BaseTest {
                 wait.until(ExpectedConditions.refreshed(
                         ExpectedConditions.elementToBeClickable(nextBtnLoc)
                 )).click(); // переход на следующую страницу
-                driver.switchTo().defaultContent(); // <<< сброс как предлагалось
             }
 
             // 3) Даты
@@ -252,7 +250,7 @@ public class GetDataTest extends BaseTest {
 
             // 5) Собираем JSON
             Map<String, String> dataMap = new LinkedHashMap<>();
-            dataMap.put("markName", markName);
+            dataMap.put("markName", holder);
             dataMap.put("applicationNumber", fullNumber);
             dataMap.put("holder", holder);
             dataMap.put("niceClasses", niceClasses);
@@ -268,29 +266,27 @@ public class GetDataTest extends BaseTest {
                 page.saveJson("wipo", "success", bucket, appNum, dataMap);
                 dataModel.setType("wipo");
                 dataModel.setData(dataMap);
-                dataModel.setMarkName(markName);
+                dataModel.setMarkName(holder);
                 dataModel.setFullId(fullNumber);
                 dataModel.setLink(CompanyCatalogPage.WIPO_BASE + fullNumber);
 
                 try {
                     page.downloadImage("wipo", "success".equals("success") ? bucket : bucket, fullNumber, dataModel);
                 } catch (IOException | NoSuchElementException e) {
-                    page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
+                    page.downloadImageWithRetry("wipo", bucket, fullNumber, dataModel);
                 }
                 this.repository.addToDatabase(dataModel);
 
                 wait.until(ExpectedConditions.refreshed(
                         ExpectedConditions.elementToBeClickable(nextBtnLoc)
                 )).click(); // переход на следующую страницу
-                driver.switchTo().defaultContent(); // <<< сброс как предлагалось
             } else {
                 page.saveJson("wipo", "error", bucket, appNum, dataMap);
-                page.downloadImageWithRetry(CompanyCatalogPage.WIPO_BASE, "wipo", bucket, fullNumber, dataModel);
+                page.downloadImageWithRetry("wipo", bucket, fullNumber, dataModel);
 
                 wait.until(ExpectedConditions.refreshed(
                         ExpectedConditions.elementToBeClickable(nextBtnLoc)
                 )).click(); // переход на следующую страницу
-                driver.switchTo().defaultContent(); // <<< сброс как предлагалось
             }
         }
     }

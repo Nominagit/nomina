@@ -369,6 +369,29 @@ public class CompanyCatalogPage {
         }
         System.out.println(">> After retries: placeholder created " + placeholder.getAbsolutePath());
     }
+    public void downloadImageWithRetry(String sourceName, String bucket, String id, DataModel record) throws IOException {
+        int attempts = 0;
+        while (attempts < 3) {
+            try {
+                downloadImage(sourceName, bucket, id, record);
+                return;
+            } catch (IOException e) {
+                attempts++;
+                System.err.println("Image try " + attempts + " failed: " + e.getMessage());
+                try {
+                    Thread.sleep(400);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+        // после 3-х неудач — гарантируем плейсхолдер
+        File placeholder = imagePath(sourceName, bucket, id, "missing");
+        ensureParent(placeholder);
+        if (!placeholder.exists()) {
+            Files.createFile(placeholder.toPath());
+        }
+        System.out.println(">> After retries: placeholder created " + placeholder.getAbsolutePath());
+    }
 
     /* ========== Вспомогательные проверки ========== */
 
