@@ -5,6 +5,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import util.HashUtil;
 
@@ -17,17 +18,23 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class CompanyCatalogPage {
 
     private final WebDriver driver;
     private final WebDriverWait wait;
+    private WebDriverWait wait_;
 
     // Базы
     public static final String AIPA_BASE = "https://old.aipa.am/search_mods/tm_database/view_item.php?id=";
     public static final String WIPO_BASE = "https://www3.wipo.int/madrid/monitor/en/showData.jsp?ID=ROM.";
     public static final String WIPO_BASE_UPDATE = "https://www3.wipo.int/madrid/monitor/en/?q=%7B%22searches%22:[%7B%22te%22:%22AM%22,%22fi%22:%22DS%22,%22co%22:%22AND%22%7D],%22filters%22:[%7B%22fi%22:%22STATUS%22,%22te%22:%22ACT%22,%22co%22:%22OR%22%7D],%22mode%22:%22advanced%22%7D";
+
+
+    private static final DateTimeFormatter IN_FMT  = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
 
     // Ключи для маппинга
     public final List<String> aipaKeys = Arrays.asList(
@@ -262,7 +269,6 @@ public class CompanyCatalogPage {
         return null;
     }
 
-
     private String guessExtFromUrl(String url) {
         String u = url.toLowerCase(Locale.ROOT);
         if (u.contains(".png")) return "png";
@@ -370,6 +376,7 @@ public class CompanyCatalogPage {
         }
         System.out.println(">> After retries: placeholder created " + placeholder.getAbsolutePath());
     }
+
     public void downloadImageWithRetry(String sourceName, String bucket, String id, DataModel record) throws IOException {
         int attempts = 0;
         while (attempts < 3) {
@@ -439,7 +446,9 @@ public class CompanyCatalogPage {
         }
     }
 
-    /** хелпер, который ищет локатор в корне и по всем iframe */
+    /**
+     * хелпер, который ищет локатор в корне и по всем iframe
+     */
     public WebElement findInAllFrames(WebDriver driver, By locator, Duration timeout) {
         WebDriverWait wait = new WebDriverWait(driver, timeout);
         driver.switchTo().defaultContent();
@@ -447,7 +456,8 @@ public class CompanyCatalogPage {
         // 1) Пробуем в корне
         try {
             return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-        } catch (TimeoutException ignore) {}
+        } catch (TimeoutException ignore) {
+        }
 
         // 2) Перебор iframe
         List<WebElement> iframes = driver.findElements(By.tagName("iframe"));
@@ -464,4 +474,66 @@ public class CompanyCatalogPage {
         driver.switchTo().defaultContent();
         throw new NoSuchElementException("Element not found in any frame: " + locator);
     }
+
+    /* ========== Фильтрации для WIPO ========== */
+
+    /**
+     * WIPO: Находим <select> по XPath и выбираем значение "100"
+     */
+    public void wipoSelectDisplayValue() {
+        wait_ = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement selectEl = wait_.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//select[@id='rowCount1' or contains(@class,'rowCount')]")
+        ));
+        new Select(selectEl).selectByValue("100");
+    }
+
+    /**
+     * WIPO: Выбор сортировки по дате регистрации
+     */
+    public void wipoSortByRegDate() throws InterruptedException {
+        Thread.sleep(2000);
+        wait_ = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement filter = wait_.until(ExpectedConditions.elementToBeClickable(By.id("jqgh_gridForsearch_pane_RD")));
+        filter.click();
+    }
+
+    /**
+     * WIPO: Получение данных по дате последней регистрации компаний
+     */
+
+    public LocalDate wipoGetRegDate() throws InterruptedException {
+        Thread.sleep(2000);
+        By regDateCell = By.xpath("//td[@aria-describedby='gridForsearch_pane_RD']");
+        WebElement cell = wait_.until(ExpectedConditions.visibilityOfElementLocated(regDateCell));
+
+        String raw = cell.getAttribute("title");
+        if (raw == null || raw.isBlank()) raw = cell.getText();
+
+        return LocalDate.parse(raw.trim(), IN_FMT);
+    }
+
+    /**
+     * WIPO: Выбор номера страницы отображаемых элементов
+     */
+
+    public void wipoSelectPageValue(String pageValue) {
+        wait_ = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement input = wait_.until(ExpectedConditions.elementToBeClickable(By.id("skipValue1")));
+        input.click();
+        input.sendKeys(Keys.BACK_SPACE);
+        input.sendKeys(pageValue);
+        input.sendKeys(Keys.ENTER);
+    }
+
+    /**
+     * WIPO: Выбор номера элемента из списка
+     */
+
+    public void wipoSelectCompanyFromTheList(String companyNumber) {
+        wait_ = new WebDriverWait(driver, Duration.ofSeconds(60));
+        WebElement tableEl = wait_.until(ExpectedConditions.elementToBeClickable(By.id(companyNumber)));
+        tableEl.click();
+    }
+
 }
