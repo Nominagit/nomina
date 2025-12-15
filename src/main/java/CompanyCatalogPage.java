@@ -27,6 +27,7 @@ public class CompanyCatalogPage {
     // Базы
     public static final String AIPA_BASE = "https://old.aipa.am/search_mods/tm_database/view_item.php?id=";
     public static final String WIPO_BASE = "https://www3.wipo.int/madrid/monitor/en/showData.jsp?ID=ROM.";
+    public static final String WIPO_BASE_UPDATE = "https://www3.wipo.int/madrid/monitor/en/?q=%7B%22searches%22:[%7B%22te%22:%22AM%22,%22fi%22:%22DS%22,%22co%22:%22AND%22%7D],%22filters%22:[%7B%22fi%22:%22STATUS%22,%22te%22:%22ACT%22,%22co%22:%22OR%22%7D],%22mode%22:%22advanced%22%7D";
 
     // Ключи для маппинга
     public final List<String> aipaKeys = Arrays.asList(
