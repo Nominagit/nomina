@@ -1,11 +1,9 @@
 import model.DataModel;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import repository.AipaRepository;
 
@@ -161,11 +159,25 @@ public class GetDataTest extends BaseTest {
         page = new CompanyCatalogPage(driver);
         driver.get("https://www3.wipo.int/madrid/monitor/en/?q=%7B%22searches%22:[%7B%22te%22:%22AM%22,%22fi%22:%22DS%22,%22co%22:%22AND%22%7D],%22filters%22:[%7B%22fi%22:%22STATUS%22,%22te%22:%22ACT%22,%22co%22:%22OR%22%7D],%22mode%22:%22advanced%22%7D");
 
+        WebDriverWait wait_ = new WebDriverWait(driver, Duration.ofSeconds(10));
+        // Находим <select> по XPath и выбираем значение "100"
+        WebElement selectEl = wait_.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//select[@id='rowCount1' or contains(@class,'rowCount')]")
+        ));
+        new Select(selectEl).selectByValue("100");
+
+        WebElement input = wait_.until(ExpectedConditions.elementToBeClickable(By.id("skipValue1")));
+        input.click();
+        input.sendKeys(Keys.BACK_SPACE);
+        input.sendKeys("48");
+        input.sendKeys(Keys.ENTER);
+
+        Thread.sleep(3000);
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
-        WebElement tableEl = wait.until(ExpectedConditions.elementToBeClickable(By.id("0")));
+        WebElement tableEl = wait.until(ExpectedConditions.elementToBeClickable(By.id("10")));
         tableEl.click();
 
-        By nextBtnLoc  = By.id("topDocNext");
+        By nextBtnLoc = By.id("topDocNext");
         By markNameLoc = By.cssSelector(".markname"); // используем в хелпере
 
         for (int id = WIPO_START_ID; id <= WIPO_END_ID; id++) {
@@ -178,8 +190,8 @@ public class GetDataTest extends BaseTest {
             String fullNumber = "";
             WebElement h = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20)); // <<< замена
             String t = (h.getText() == null ? "" : h.getText().trim())
-                    .replace('\u2013','-')  // – en dash
-                    .replace('\u2014','-'); // — em dash
+                    .replace('\u2013', '-')  // – en dash
+                    .replace('\u2014', '-'); // — em dash
 
             Matcher m = Pattern.compile("^\\s*(\\d+)\\s*[-—–]?").matcher(t);
             fullNumber = m.find() ? m.group(1) : "";
@@ -290,7 +302,6 @@ public class GetDataTest extends BaseTest {
             }
         }
     }
-
     @Test
     public void scrapeAipa() throws Exception {
         page = new CompanyCatalogPage(driver);
