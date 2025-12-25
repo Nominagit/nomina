@@ -40,7 +40,7 @@ public class UpdateDataTest extends BaseTest {
 
     // --- WIPO ---
     private static final int WIPO_START_ID = 1;   // 1000000
-    private static final int WIPO_END_ID = 51818;   // подставь нужный верхний диапазон - 1882100
+    private static final int WIPO_END_ID = 51869;   // подставь нужный верхний диапазон - 1882100
 
     public UpdateDataTest() throws SQLException {
     }
@@ -58,19 +58,21 @@ public class UpdateDataTest extends BaseTest {
         page.wipoSortByRegDate();       // выбор сортировки по дате регистрации
 
         // Получение данных по дате последней регистрации компаний и проверка на актуальность даты
-        LocalDate lastRegDate = page.wipoGetRegDate();  // получение даты последней зарегистрировавшейся компании
-        LocalDate stopDate = LocalDate.of(2025, 10, 31); // <-- нужная дата (порог)
-        if (!lastRegDate.isAfter(stopDate)) { // lastRegDate <= stopDate
-            return;
-        }
+//        LocalDate lastRegDate = page.wipoGetRegDate();  // получение даты последней зарегистрировавшейся компании
+//        LocalDate stopDate = LocalDate.of(2025, 10, 31); // <-- нужная дата (порог)
+//        if (!lastRegDate.isAfter(stopDate)) { // lastRegDate <= stopDate
+//            return;
+//        }
 
-        page.wipoSelectPageValue("1"); // выбор номера страницы отображаемых элементов
+        page.wipoSelectPageValue("184"); // выбор номера страницы отображаемых элементов
         Thread.sleep(3000);
-        page.wipoSelectCompanyFromTheList("1"); // выбор номера элемента из списка
+        page.wipoSelectCompanyFromTheList("96"); // выбор номера элемента из списка
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
 
+        Thread.sleep(2000);
         By nextBtnLoc = By.id("topDocNext");
+        Thread.sleep(2000);
         By markNameLoc = By.cssSelector(".markname"); // используем в хелпере
 
         for (int id = WIPO_START_ID; id <= WIPO_END_ID; id++) {
@@ -81,13 +83,23 @@ public class UpdateDataTest extends BaseTest {
 
             // Номер обращения
             String fullNumber = "";
-            WebElement h = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20)); // <<< замена
-            String t = (h.getText() == null ? "" : h.getText().trim())
-                    .replace('\u2013', '-')  // – en dash
-                    .replace('\u2014', '-'); // — em dash
+            try {
+                // ждём, что .markname появится (а не просто “сразу ищем”)
+                WebElement h = new WebDriverWait(driver, Duration.ofSeconds(60))
+                        .until(d -> page.findInAllFrames(d, markNameLoc, Duration.ofSeconds(2)));
 
-            Matcher m = Pattern.compile("^\\s*(\\d+)\\s*[-—–]?").matcher(t);
-            fullNumber = m.find() ? m.group(1) : "";
+                String t = Optional.ofNullable(h.getText()).orElse("").trim()
+                        .replace('\u2013', '-').replace('\u2014', '-');
+
+                Matcher m = Pattern.compile("^\\s*(\\d+)\\s*[-—–]?").matcher(t);
+                fullNumber = m.find() ? m.group(1) : "";
+            } catch (TimeoutException | NoSuchElementException e) {
+                // если за 60 сек так и не появилось — это уже “плохая карточка”, ждать больше бессмысленно
+                page.saveJson("wipo", "error", "unknown", "unknown",
+                        Map.of("reason", "markname-missing-or-not-loaded"));
+                wait.until(ExpectedConditions.elementToBeClickable(nextBtnLoc)).click();
+                continue;
+            }
 
             // Определяем корзину - bucket
             String bucket = page.wipoBucket(fullNumber);
@@ -102,15 +114,15 @@ public class UpdateDataTest extends BaseTest {
 
             /* ========== Закомментировать участок кода при первичном сборе данных ========== */
             // сравнение (типы regDate/expDate не трогаем)
-            if (regDate != null && !regDate.isBlank()) {
-                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-                LocalDate regLocalDate = LocalDate.parse(regDate.trim(), fmt);
-
-                if (regLocalDate.isEqual(stopDate)) {
-                    System.out.println("\nINFO: Все актуальные данные получены (достигнут порог stopDate: " + stopDate + "). \nСбор данных остановлен.");
-                    break;
-                }
-            }
+//            if (regDate != null && !regDate.isBlank()) {
+//                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+//                LocalDate regLocalDate = LocalDate.parse(regDate.trim(), fmt);
+//
+//                if (regLocalDate.isEqual(stopDate)) {
+//                    System.out.println("\nINFO: Все актуальные данные получены (достигнут порог stopDate: " + stopDate + "). \nСбор данных остановлен.");
+//                    break;
+//                }
+//            }
 
             // Определяем holder и niceClasses
             String holder = "";
@@ -124,6 +136,7 @@ public class UpdateDataTest extends BaseTest {
                 wait.until(ExpectedConditions.refreshed(
                         ExpectedConditions.elementToBeClickable(nextBtnLoc)
                 )).click(); // переход на следующую страницу
+                continue;
             }
 
             try {
@@ -134,6 +147,7 @@ public class UpdateDataTest extends BaseTest {
                 wait.until(ExpectedConditions.refreshed(
                         ExpectedConditions.elementToBeClickable(nextBtnLoc)
                 )).click(); // переход на следующую страницу
+                continue;
             }
 
             // 4) 732 и 511
