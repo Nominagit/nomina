@@ -40,7 +40,7 @@ public class UpdateDataTest extends BaseTest {
 
     // --- WIPO ---
     private static final int WIPO_START_ID = 1;   // 1000000
-    private static final int WIPO_END_ID = 51869;   // подставь нужный верхний диапазон - 1882100
+    private static final int WIPO_END_ID = 51894;   // подставь нужный верхний диапазон - 1882100
 
     public UpdateDataTest() throws SQLException {
     }
@@ -64,9 +64,9 @@ public class UpdateDataTest extends BaseTest {
 //            return;
 //        }
 
-        page.wipoSelectPageValue("184"); // выбор номера страницы отображаемых элементов
+        page.wipoSelectPageValue("156"); // выбор номера страницы отображаемых элементов
         Thread.sleep(3000);
-        page.wipoSelectCompanyFromTheList("96"); // выбор номера элемента из списка
+        page.wipoSelectCompanyFromTheList("66"); // выбор номера элемента из списка
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
 
@@ -83,26 +83,48 @@ public class UpdateDataTest extends BaseTest {
 
             // Номер обращения
             String fullNumber = "";
-            try {
-                // ждём, что .markname появится (а не просто “сразу ищем”)
-                WebElement h = new WebDriverWait(driver, Duration.ofSeconds(60))
-                        .until(d -> page.findInAllFrames(d, markNameLoc, Duration.ofSeconds(2)));
+            WebElement h = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20)); // <<< замена
+            String t = (h.getText() == null ? "" : h.getText().trim())
+                    .replace('\u2013', '-')  // – en dash
+                    .replace('\u2014', '-'); // — em dash
 
-                String t = Optional.ofNullable(h.getText()).orElse("").trim()
-                        .replace('\u2013', '-').replace('\u2014', '-');
-
-                Matcher m = Pattern.compile("^\\s*(\\d+)\\s*[-—–]?").matcher(t);
-                fullNumber = m.find() ? m.group(1) : "";
-            } catch (TimeoutException | NoSuchElementException e) {
-                // если за 60 сек так и не появилось — это уже “плохая карточка”, ждать больше бессмысленно
-                page.saveJson("wipo", "error", "unknown", "unknown",
-                        Map.of("reason", "markname-missing-or-not-loaded"));
-                wait.until(ExpectedConditions.elementToBeClickable(nextBtnLoc)).click();
-                continue;
-            }
+            Matcher m = Pattern.compile("^\\s*(\\d+)\\s*[-—–]?").matcher(t);
+            fullNumber = m.find() ? m.group(1) : "";
 
             // Определяем корзину - bucket
             String bucket = page.wipoBucket(fullNumber);
+
+            // Заголовок
+            String markName = "";
+            try {
+                WebElement h2 = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20));
+                String header = (h2.getText() == null) ? "" : h2.getText().trim()
+                        .replace('\u2013', '-')  // –
+                        .replace('\u2014', '-'); // —
+
+                int dash = header.indexOf('-');
+
+                if (dash > 0) {
+                    // Ситуация: "1896258 - MULTIBURN"
+                    String candidate = header.substring(dash + 1).split("\\R", 2)[0].trim();
+                    if (!candidate.isEmpty()) {
+                        markName = candidate;
+                    }
+                }
+
+                // fallback: если в заголовке имени нет — читаем INID 561
+                if (markName.isEmpty()) {
+                    try {
+                        WebElement n561 = driver.findElement(By.xpath(
+                                "//div[@class='inidCode' and contains(text(),'561')]/following::div[contains(@class,'text')][1]"
+                        ));
+                        markName = Optional.ofNullable(n561.getText()).orElse("").trim();
+                    } catch (NoSuchElementException ignored) {
+                    }
+                }
+
+            } catch (Exception ignored) {
+            }
 
             // Даты
             String regDate = "", expDate = "";
@@ -171,7 +193,7 @@ public class UpdateDataTest extends BaseTest {
 
             // 5) Собираем JSON
             Map<String, String> dataMap = new LinkedHashMap<>();
-            dataMap.put("markName", holder);
+            dataMap.put("markName", markName);
             dataMap.put("applicationNumber", fullNumber);
             dataMap.put("holder", holder);
             dataMap.put("niceClasses", niceClasses);
@@ -187,7 +209,7 @@ public class UpdateDataTest extends BaseTest {
                 page.saveJson("wipo", "success", bucket, appNum, dataMap);
                 dataModel.setType("wipo");
                 dataModel.setData(dataMap);
-                dataModel.setMarkName(holder);
+                dataModel.setMarkName(markName);
                 dataModel.setFullId(fullNumber);
                 dataModel.setLink(CompanyCatalogPage.WIPO_BASE + fullNumber);
 
