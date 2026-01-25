@@ -8,8 +8,6 @@ import repository.AipaRepository;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,17 +28,16 @@ public class UpdateDataTest extends BaseTest {
     private final AipaRepository repository = new AipaRepository("jdbc:postgresql://localhost:5432/postgres", "postgres", "nominapass");
 
     // --- AIPA ---
-    private static final String[] AIPA_PREFIXES = {
-            "2026"
-    };
-
+    private static final String[] AIPA_PREFIXES = {"2026"};
     private static final int AIPA_SUFFIX_START = 1;      // 0001
-    private static final int AIPA_SUFFIX_END = 9999;    // пример диапазона; можно 9999
+    private static final int AIPA_SUFFIX_END = 9999;     // 9999
     private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 130; // если подряд столько «пустых» — префикс считаем исчерпанным
 
     // --- WIPO ---
-    private static final int WIPO_START_ID = 1;   // 1000000
-    private static final int WIPO_END_ID = 51894;   // подставь нужный верхний диапазон - 1882100
+    // теперь значение берём из файла при старте (если файла нет — используем дефолт)
+    private static String WIPO_LAST_ACTUAL_NUMBER = WipoStateStore.loadOrDefault("1896539");
+    private static final int WIPO_START_ID = 1;
+    private static final int WIPO_END_ID = 51901;
 
     public UpdateDataTest() throws SQLException {
     }
@@ -55,25 +52,25 @@ public class UpdateDataTest extends BaseTest {
          */
         page.wipoSelectDisplayValue(); // выбор количества отображаемых элементов на странице
         Thread.sleep(2000);
-        page.wipoSortByRegDate();       // выбор сортировки по дате регистрации
+        page.wipoSortByRegDate(); // выбор сортировки по дате регистрации
+        Thread.sleep(2000);
 
-        // Получение данных по дате последней регистрации компаний и проверка на актуальность даты
-//        LocalDate lastRegDate = page.wipoGetRegDate();  // получение даты последней зарегистрировавшейся компании
-//        LocalDate stopDate = LocalDate.of(2025, 10, 31); // <-- нужная дата (порог)
-//        if (!lastRegDate.isAfter(stopDate)) { // lastRegDate <= stopDate
-//            return;
-//        }
+        // Получение данных по актуальному номеру Reg.No
+        List<WebElement> companyId = driver.findElements(By.xpath(
+                "//table[@id='gridForsearch_pane']//tr[contains(@class,'jqgrow')]/td[starts-with(@title,'ROM.')]"));
+        String titleValue = companyId.get(0).getAttribute("title");
+        String regNo = titleValue.replace("ROM.", "").trim();
 
-        page.wipoSelectPageValue("156"); // выбор номера страницы отображаемых элементов
+        page.wipoSelectPageValue("1");
         Thread.sleep(3000);
-        page.wipoSelectCompanyFromTheList("66"); // выбор номера элемента из списка
+        page.wipoSelectCompanyFromTheList("0");
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
 
         Thread.sleep(2000);
         By nextBtnLoc = By.id("topDocNext");
         Thread.sleep(2000);
-        By markNameLoc = By.cssSelector(".markname"); // используем в хелпере
+        By markNameLoc = By.cssSelector(".markname");
 
         for (int id = WIPO_START_ID; id <= WIPO_END_ID; id++) {
             var dataModel = new DataModel();
@@ -83,13 +80,25 @@ public class UpdateDataTest extends BaseTest {
 
             // Номер обращения
             String fullNumber = "";
-            WebElement h = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20)); // <<< замена
+            WebElement h = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20));
             String t = (h.getText() == null ? "" : h.getText().trim())
                     .replace('\u2013', '-')  // – en dash
                     .replace('\u2014', '-'); // — em dash
 
             Matcher m = Pattern.compile("^\\s*(\\d+)\\s*[-—–]?").matcher(t);
             fullNumber = m.find() ? m.group(1) : "";
+
+            // сравнение Reg.No с последним актуальным - WIPO_LAST_ACTUAL_NUMBER
+            if (fullNumber != null && !fullNumber.isBlank()) {
+                if (fullNumber.equals(WIPO_LAST_ACTUAL_NUMBER)) {
+                    System.out.println("\nINFO: Все актуальные данные получены. \nСбор данных остановлен.");
+
+                    // обновляем значение и сохраняем в файл (чтобы запомнилось на следующий запуск)
+                    WIPO_LAST_ACTUAL_NUMBER = regNo;
+                    WipoStateStore.save(WIPO_LAST_ACTUAL_NUMBER);
+                    break;
+                }
+            }
 
             // Определяем корзину - bucket
             String bucket = page.wipoBucket(fullNumber);
@@ -99,13 +108,12 @@ public class UpdateDataTest extends BaseTest {
             try {
                 WebElement h2 = page.findInAllFrames(driver, markNameLoc, Duration.ofSeconds(20));
                 String header = (h2.getText() == null) ? "" : h2.getText().trim()
-                        .replace('\u2013', '-')  // –
-                        .replace('\u2014', '-'); // —
+                        .replace('\u2013', '-')
+                        .replace('\u2014', '-');
 
                 int dash = header.indexOf('-');
 
                 if (dash > 0) {
-                    // Ситуация: "1896258 - MULTIBURN"
                     String candidate = header.substring(dash + 1).split("\\R", 2)[0].trim();
                     if (!candidate.isEmpty()) {
                         markName = candidate;
@@ -134,26 +142,17 @@ public class UpdateDataTest extends BaseTest {
                 expDate = datesOpt.get()[1];
             }
 
-            /* ========== Закомментировать участок кода при первичном сборе данных ========== */
-            // сравнение (типы regDate/expDate не трогаем)
-//            if (regDate != null && !regDate.isBlank()) {
-//                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-//                LocalDate regLocalDate = LocalDate.parse(regDate.trim(), fmt);
-//
-//                if (regLocalDate.isEqual(stopDate)) {
-//                    System.out.println("\nINFO: Все актуальные данные получены (достигнут порог stopDate: " + stopDate + "). \nСбор данных остановлен.");
-//                    break;
-//                }
-//            }
-
             // Определяем holder и niceClasses
             String holder = "";
             String niceClasses = "";
             try {
                 holder = new WebDriverWait(driver, Duration.ofSeconds(60))
-                        .until(ExpectedConditions.presenceOfElementLocated(By.xpath("(//div[@class='lapin client holType'])[1]"))).getText();
+                        .until(ExpectedConditions.presenceOfElementLocated(
+                                By.xpath("(//div[@class='lapin client holType'])[1]")
+                        )).getText();
             } catch (TimeoutException e) {
-                page.saveJson("wipo", "error", bucket, fullNumber, Map.of("applicationNumber", fullNumber, "reason", "holder-missing"));
+                page.saveJson("wipo", "error", bucket, fullNumber,
+                        Map.of("applicationNumber", fullNumber, "reason", "holder-missing"));
 
                 wait.until(ExpectedConditions.refreshed(
                         ExpectedConditions.elementToBeClickable(nextBtnLoc)
@@ -163,16 +162,20 @@ public class UpdateDataTest extends BaseTest {
 
             try {
                 niceClasses = new WebDriverWait(driver, Duration.ofSeconds(60))
-                        .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//td[@class='nice']//div"))).getText();
+                        .until(ExpectedConditions.presenceOfElementLocated(
+                                By.xpath("//td[@class='nice']//div")
+                        )).getText();
             } catch (TimeoutException e) {
-                page.saveJson("wipo", "error", bucket, fullNumber, Map.of("applicationNumber", fullNumber, "reason", "niceClasses-missing"));
+                page.saveJson("wipo", "error", bucket, fullNumber,
+                        Map.of("applicationNumber", fullNumber, "reason", "niceClasses-missing"));
+
                 wait.until(ExpectedConditions.refreshed(
                         ExpectedConditions.elementToBeClickable(nextBtnLoc)
                 )).click(); // переход на следующую страницу
                 continue;
             }
 
-            // 4) 732 и 511
+            // 732 и 511
             String holder732 = "";
             String goods511 = "";
             try {
@@ -191,7 +194,7 @@ public class UpdateDataTest extends BaseTest {
             } catch (NoSuchElementException ignored) {
             }
 
-            // 5) Собираем JSON
+            // Собираем JSON
             Map<String, String> dataMap = new LinkedHashMap<>();
             dataMap.put("markName", markName);
             dataMap.put("applicationNumber", fullNumber);
@@ -214,10 +217,11 @@ public class UpdateDataTest extends BaseTest {
                 dataModel.setLink(CompanyCatalogPage.WIPO_BASE + fullNumber);
 
                 try {
-                    page.downloadImage("wipo", "success".equals("success") ? bucket : bucket, fullNumber, dataModel);
+                    page.downloadImage("wipo", bucket, fullNumber, dataModel);
                 } catch (IOException | NoSuchElementException e) {
                     page.downloadImageWithRetry("wipo", bucket, fullNumber, dataModel);
                 }
+
                 this.repository.addToDatabase(dataModel);
 
                 wait.until(ExpectedConditions.refreshed(
@@ -244,7 +248,7 @@ public class UpdateDataTest extends BaseTest {
             for (int i = AIPA_SUFFIX_START; i <= AIPA_SUFFIX_END; i++) {
                 String suffix = String.format("%04d", i);
                 String fullId = prefix + suffix;
-                String bucket = page.aipaBucket(prefix); // бакет = префикс
+                String bucket = page.aipaBucket(prefix);
                 var dataModel = new DataModel();
 
                 // Загружаем блоки и пытаемся собрать карту
