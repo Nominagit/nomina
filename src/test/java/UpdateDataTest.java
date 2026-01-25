@@ -28,7 +28,7 @@ public class UpdateDataTest extends BaseTest {
     private final AipaRepository repository = new AipaRepository("jdbc:postgresql://localhost:5432/postgres", "postgres", "nominapass");
 
     // --- AIPA ---
-    private static final String[] AIPA_PREFIXES = {"2026"};
+    private static final String[] AIPA_PREFIXES = {"2025", "2026"};
     private static final int AIPA_SUFFIX_START = 1;      // 0001
     private static final int AIPA_SUFFIX_END = 9999;     // 9999
     private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 130; // если подряд столько «пустых» — префикс считаем исчерпанным

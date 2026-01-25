@@ -1,0 +1,142 @@
+===== Sun Jan 25 20:32:14 +04 2026 START WIPO =====
+янв. 25, 2026 8:32:19 PM org.openqa.selenium.devtools.CdpVersionFinder findNearestMatch
+WARNING: Unable to find CDP implementation matching 144
+янв. 25, 2026 8:32:19 PM org.openqa.selenium.chromium.ChromiumDriver lambda$new$5
+WARNING: Unable to find version of CDP to use for 144.0.7559.97. You may need to include a dependency on a specific version of the CDP using something similar to `org.seleniumhq.selenium:selenium-devtools-v86:4.25.0` where the version ("v86") matches the version of the chromium-based browser you're using and the version number of the artifact is the same as Selenium's.
+JSON saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/json/success/wipo/189/1899963.json
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 23.54 s <<< FAILURE! -- in UpdateDataTest
+[ERROR] UpdateDataTest.scrapeWipoARM -- Time elapsed: 23.39 s <<< ERROR!
+org.openqa.selenium.NoSuchWindowException: 
+no such window: target window already closed
+from unknown error: web view not found
+  (Session info: chrome=144.0.7559.97)
+Build info: version: '4.25.0', revision: '8a8aea2337'
+System info: os.name: 'Mac OS X', os.arch: 'aarch64', os.version: '15.6.1', java.version: '17.0.16'
+Driver info: org.openqa.selenium.chrome.ChromeDriver
+Command: [b4c1e6f8b0de6eed835b9d4d7f079e34, findElements {value=img[src*='/dbimg/'], using=css selector}]
+Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 144.0.7559.97, chrome: {chromedriverVersion: 144.0.7559.96 (d7b80622cfab..., userDataDir: /var/folders/r7/qvxf707910d...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:65150}, goog:processID: 96995, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: mac, proxy: Proxy(), se:cdp: ws://localhost:65150/devtoo..., se:cdpVersion: 144.0.7559.97, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
+Session ID: b4c1e6f8b0de6eed835b9d4d7f079e34
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+	at org.openqa.selenium.remote.ErrorCodec.decode(ErrorCodec.java:167)
+	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.decode(W3CHttpResponseCodec.java:138)
+	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.decode(W3CHttpResponseCodec.java:50)
+	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:190)
+	at org.openqa.selenium.remote.service.DriverCommandExecutor.invokeExecute(DriverCommandExecutor.java:216)
+	at org.openqa.selenium.remote.service.DriverCommandExecutor.execute(DriverCommandExecutor.java:174)
+	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:545)
+	at org.openqa.selenium.remote.ElementLocation$ElementFinder$2.findElements(ElementLocation.java:182)
+	at org.openqa.selenium.remote.ElementLocation.findElements(ElementLocation.java:103)
+	at org.openqa.selenium.remote.RemoteWebDriver.findElements(RemoteWebDriver.java:381)
+	at org.openqa.selenium.remote.RemoteWebDriver.findElements(RemoteWebDriver.java:375)
+	at CompanyCatalogPage.findImageSrcById(CompanyCatalogPage.java:248)
+	at CompanyCatalogPage.downloadImage(CompanyCatalogPage.java:321)
+	at UpdateDataTest.scrapeWipoARM(UpdateDataTest.java:220)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+[ERROR] Errors: 
+[ERROR]   UpdateDataTest.scrapeWipoARM:220 » NoSuchWindow no such window: target window already closed
+from unknown error: web view not found
+  (Session info: chrome=144.0.7559.97)
+Build info: version: '4.25.0', revision: '8a8aea2337'
+System info: os.name: 'Mac OS X', os.arch: 'aarch64', os.version: '15.6.1', java.version: '17.0.16'
+Driver info: org.openqa.selenium.chrome.ChromeDriver
+Command: [b4c1e6f8b0de6eed835b9d4d7f079e34, findElements {value=img[src*='/dbimg/'], using=css selector}]
+Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 144.0.7559.97, chrome: {chromedriverVersion: 144.0.7559.96 (d7b80622cfab..., userDataDir: /var/folders/r7/qvxf707910d...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:65150}, goog:processID: 96995, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: mac, proxy: Proxy(), se:cdp: ws://localhost:65150/devtoo..., se:cdpVersion: 144.0.7559.97, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
+Session ID: b4c1e6f8b0de6eed835b9d4d7f079e34
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.2.5:test (default-test) on project company_catalog: 
+[ERROR] 
+[ERROR] Please refer to /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+===== Sun Jan 25 20:50:01 +04 2026 START WIPO =====
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/opt/homebrew/Cellar/maven/3.9.9/libexec/lib/jansi-2.4.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:/opt/homebrew/Cellar/maven/3.9.9/libexec/lib/guava-33.2.1-jre.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+янв. 25, 2026 8:50:08 PM org.openqa.selenium.devtools.CdpVersionFinder findNearestMatch
+WARNING: Unable to find CDP implementation matching 144
+янв. 25, 2026 8:50:08 PM org.openqa.selenium.chromium.ChromiumDriver lambda$new$5
+WARNING: Unable to find version of CDP to use for 144.0.7559.97. You may need to include a dependency on a specific version of the CDP using something similar to `org.seleniumhq.selenium:selenium-devtools-v86:4.25.0` where the version ("v86") matches the version of the chromium-based browser you're using and the version number of the artifact is the same as Selenium's.
+JSON saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/json/success/wipo/189/1899963.json
+>> Placeholder created: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/image/wipo/189/1899963.missing
+Inserted record with id = 224
+JSON saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/json/success/wipo/189/1898728.json
+>> Placeholder created: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/image/wipo/189/1898728.missing
+Inserted record with id = 225
+JSON saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/json/success/wipo/190/1900013.json
+Image saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/image/wipo/190/1900013.jpg
+
+Inserted record with id = 226
+JSON saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/json/success/wipo/190/1900012.json
+Image saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/image/wipo/190/1900012.jpg
+
+Inserted record with id = 227
+JSON saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/json/success/wipo/189/1899182.json
+Image saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/image/wipo/189/1899182.jpg
+
+Inserted record with id = 228
+JSON saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/json/success/wipo/190/1900296.json
+>> Placeholder created: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/image/wipo/190/1900296.missing
+Inserted record with id = 229
+JSON saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/json/success/wipo/189/1899369.json
+Image saved: /Users/vahe/IdeaProjects/Projects/YaPracticum/company_catalog/src/test/resources/image/wipo/189/1899369.jpg
+
+Inserted record with id = 230
+
+INFO: Все актуальные данные получены. 
+Сбор данных остановлен.
+===== Sun Jan 25 20:51:09 +04 2026 END WIPO =====
+===== Sun Jan 25 21:00:01 +04 2026 START WIPO =====
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/opt/homebrew/Cellar/maven/3.9.9/libexec/lib/jansi-2.4.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:/opt/homebrew/Cellar/maven/3.9.9/libexec/lib/guava-33.2.1-jre.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+янв. 25, 2026 9:00:07 PM org.openqa.selenium.devtools.CdpVersionFinder findNearestMatch
+WARNING: Unable to find CDP implementation matching 144
+янв. 25, 2026 9:00:07 PM org.openqa.selenium.chromium.ChromiumDriver lambda$new$5
+WARNING: Unable to find version of CDP to use for 144.0.7559.97. You may need to include a dependency on a specific version of the CDP using something similar to `org.seleniumhq.selenium:selenium-devtools-v86:4.25.0` where the version ("v86") matches the version of the chromium-based browser you're using and the version number of the artifact is the same as Selenium's.
+
+INFO: Все актуальные данные получены. 
+Сбор данных остановлен.
+===== Sun Jan 25 21:00:30 +04 2026 END WIPO =====
+===== Sun Jan 25 21:10:00 +04 2026 START WIPO =====
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/opt/homebrew/Cellar/maven/3.9.9/libexec/lib/jansi-2.4.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:/opt/homebrew/Cellar/maven/3.9.9/libexec/lib/guava-33.2.1-jre.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+янв. 25, 2026 9:10:06 PM org.openqa.selenium.devtools.CdpVersionFinder findNearestMatch
+WARNING: Unable to find CDP implementation matching 144
+янв. 25, 2026 9:10:06 PM org.openqa.selenium.chromium.ChromiumDriver lambda$new$5
+WARNING: Unable to find version of CDP to use for 144.0.7559.97. You may need to include a dependency on a specific version of the CDP using something similar to `org.seleniumhq.selenium:selenium-devtools-v86:4.25.0` where the version ("v86") matches the version of the chromium-based browser you're using and the version number of the artifact is the same as Selenium's.
+
+INFO: Все актуальные данные получены. 
+Сбор данных остановлен.
+===== Sun Jan 25 21:10:30 +04 2026 END WIPO =====
