@@ -31,7 +31,7 @@ public class UpdateDataTest extends BaseTest {
     private static final String[] AIPA_PREFIXES = {"2025", "2026"};
     private static final int AIPA_SUFFIX_START = 1;      // 0001
     private static final int AIPA_SUFFIX_END = 9999;     // 9999
-    private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 130; // если подряд столько «пустых» — префикс считаем исчерпанным
+    private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 1500; // если подряд столько «пустых» — префикс считаем исчерпанным
 
     // --- WIPO ---
     // теперь значение берём из файла при старте (если файла нет — используем дефолт)
@@ -238,6 +238,35 @@ public class UpdateDataTest extends BaseTest {
         }
     }
 
+    /**
+     * Определяет, есть ли "крупная" картинка знака на странице.
+     * Используем naturalWidth/naturalHeight, чтобы отсечь мелкие иконки.
+     */
+    private boolean hasAipaMarkImageOnPage() {
+        try {
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            List<WebElement> imgs = driver.findElements(By.tagName("img"));
+
+            for (WebElement img : imgs) {
+                if (img == null) continue;
+                if (!img.isDisplayed()) continue;
+
+                String src = img.getAttribute("src");
+                if (src == null || src.isBlank()) continue;
+
+                long w = ((Number) js.executeScript("return arguments[0].naturalWidth || 0;", img)).longValue();
+                long h = ((Number) js.executeScript("return arguments[0].naturalHeight || 0;", img)).longValue();
+
+                // порог можно подкрутить, но для "знака" обычно подходит
+                if (w >= 120 && h >= 120) return true;
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
     @Test
     public void scrapeAipa() throws Exception {
         page = new CompanyCatalogPage(driver);
@@ -245,7 +274,9 @@ public class UpdateDataTest extends BaseTest {
         for (String prefix : AIPA_PREFIXES) {
             int consecutiveMisses = 0;
 
-            for (int i = AIPA_SUFFIX_START; i <= AIPA_SUFFIX_END; i++) {
+            int startSuffix = Math.max(AIPA_SUFFIX_START, AipaStateStore.loadOrDefault(prefix, AIPA_SUFFIX_START));
+
+            for (int i = startSuffix; i <= AIPA_SUFFIX_END; i++)  {
                 String suffix = String.format("%04d", i);
                 String fullId = prefix + suffix;
                 String bucket = page.aipaBucket(prefix);
@@ -268,8 +299,6 @@ public class UpdateDataTest extends BaseTest {
                     dataModel.setType("aipa");
 
                     page.saveJson("dataModel", "success", bucket, appNum, dataMap);
-                    consecutiveMisses = 0;
-
                     try {
                         page.downloadImage(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, dataModel);
                     } catch (IOException | NoSuchElementException e) {
@@ -281,10 +310,13 @@ public class UpdateDataTest extends BaseTest {
                     page.saveJson("aipa", "error", bucket, fullId, dataMap);
                     page.downloadImageWithRetry(CompanyCatalogPage.AIPA_BASE, "aipa", bucket, fullId, dataModel);
 
-                    consecutiveMisses++;
-                    // Если в начале префикса или в целом подряд слишком много пустых — переключаемся на следующий префикс
-                    if (consecutiveMisses >= AIPA_MAX_MISSES_TO_SKIP_PREFIX) {
+                    // кейс 3 = нет текста (мы уже в else) И нет картинки
+                    boolean isCase3 = !hasAipaMarkImageOnPage();
+
+                    if (isCase3) {
                         System.out.println("Prefix " + prefix + " looks exhausted. Skipping rest.");
+                        // после успешного сохранения (hasData == true)
+                        AipaStateStore.save(prefix, i);
                         break;
                     }
                 }
