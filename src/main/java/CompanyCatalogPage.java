@@ -9,6 +9,9 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import util.HashUtil;
 
+import java.io.ByteArrayInputStream;
+import java.util.Base64;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -297,10 +300,8 @@ public class CompanyCatalogPage {
 
         URL base = new URL(dataLinkBase);
         URL imgUrl = new URL(base, imageUrl);
-        BufferedImage img = ImageIO.read(imgUrl);
-        if (img == null) {
-            throw new IOException("ImageIO.read returned null for " + imgUrl);
-        }
+
+        BufferedImage img = readImageViaBrowserFetch(imgUrl.toString());
 
         String ext = guessExtFromUrl(imageUrl);
         File real = imagePath(sourceName, bucket, id, ext);
@@ -535,5 +536,34 @@ public class CompanyCatalogPage {
         WebElement tableEl = wait_.until(ExpectedConditions.elementToBeClickable(By.id(companyNumber)));
         tableEl.click();
     }
+    private BufferedImage readImageViaBrowserFetch(String absoluteUrl) throws IOException {
+        String script =
+                "const url = arguments[0]; const cb = arguments[1];" +
+                        "fetch(url, {credentials:'include'})" +
+                        ".then(r => { if(!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })" +
+                        ".then(b => new Promise((res, rej) => {" +
+                        "  const fr = new FileReader();" +
+                        "  fr.onloadend = () => res(fr.result);" +
+                        "  fr.onerror = () => rej(new Error('FileReader error'));" +
+                        "  fr.readAsDataURL(b);" +
+                        "} ))" +
+                        ".then(dataUrl => cb(dataUrl))" +
+                        ".catch(e => cb('ERR:' + e.message));";
+
+        Object res = ((JavascriptExecutor) driver).executeAsyncScript(script, absoluteUrl);
+
+        if (res == null) throw new IOException("Browser fetch returned null for " + absoluteUrl);
+        String dataUrl = res.toString();
+        if (dataUrl.startsWith("ERR:")) throw new IOException("Browser fetch failed: " + dataUrl + " | url=" + absoluteUrl);
+
+        int comma = dataUrl.indexOf(',');
+        if (comma < 0) throw new IOException("Invalid dataUrl returned for " + absoluteUrl);
+
+        byte[] bytes = Base64.getDecoder().decode(dataUrl.substring(comma + 1));
+        BufferedImage img = ImageIO.read(new ByteArrayInputStream(bytes));
+        if (img == null) throw new IOException("Fetched bytes are not an image for " + absoluteUrl);
+        return img;
+    }
+
 
 }
