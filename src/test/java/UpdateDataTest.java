@@ -31,7 +31,7 @@ public class UpdateDataTest extends BaseTest {
     private static final String[] AIPA_PREFIXES = {"2026"};
     private static final int AIPA_SUFFIX_START = 1;      // 0001
     private static final int AIPA_SUFFIX_END = 9999;     // 9999
-    private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 1500; // если подряд столько «пустых» — префикс считаем исчерпанным
+    private static final int AIPA_MAX_MISSES_TO_SKIP_PREFIX = 1;
 
     // --- WIPO ---
     // теперь значение берём из файла при старте (если файла нет — используем дефолт)
@@ -258,7 +258,7 @@ public class UpdateDataTest extends BaseTest {
                 long h = ((Number) js.executeScript("return arguments[0].naturalHeight || 0;", img)).longValue();
 
                 // порог можно подкрутить, но для "знака" обычно подходит
-                if (w >= 120 && h >= 120) return true;
+                if (w >= 30 && h >= 30) return true;
             }
             return false;
         } catch (Exception e) {
@@ -314,10 +314,12 @@ public class UpdateDataTest extends BaseTest {
                     boolean isCase3 = !hasAipaMarkImageOnPage();
 
                     if (isCase3) {
-                        System.out.println("Prefix " + prefix + " looks exhausted. Skipping rest.");
-                        // после успешного сохранения (hasData == true)
-                        AipaStateStore.save(prefix, i);
-                        break;
+                        consecutiveMisses++;
+                        if (consecutiveMisses > AIPA_MAX_MISSES_TO_SKIP_PREFIX) {
+                            System.out.println("Prefix " + prefix + " looks exhausted. Skipping rest.");
+                            AipaStateStore.save(prefix, i);
+                            break;
+                        }
                     }
                 }
             }
